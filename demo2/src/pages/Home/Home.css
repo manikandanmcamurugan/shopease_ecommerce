@@ -1,0 +1,164 @@
+.section-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.section-header h2 {
+  font-size: 2.2rem;
+  margin-bottom: 0.5rem;
+}
+
+.section-header p {
+  color: var(--text-muted);
+}
+
+.bg-alt {
+  background-color: var(--card-bg);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.newsletter-section {
+  padding: 3rem 0;
+}
+
+.newsletter-box {
+  background-color: var(--primary);
+  color: white;
+  padding: 4rem;
+  border-radius: 20px;
+  text-align: center;
+  box-shadow: var(--shadow-lg);
+}
+
+.newsletter-box h2 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.newsletter-box p {
+  margin-bottom: 2rem;
+  opacity: 0.9;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.newsletter-form {
+  display: flex;
+  max-width: 500px;
+  margin: 0 auto;
+  gap: 1rem;
+}
+
+.newsletter-form input {
+  flex: 1;
+  padding: 1rem 1.5rem;
+  border-radius: var(--radius);
+  border: none;
+  font-size: 1rem;
+}
+
+.newsletter-form .btn {
+  background-color: white;
+  color: var(--primary);
+  white-space: nowrap;
+}
+
+.newsletter-form .btn:hover {
+  background-color: #f1f5f9;
+  transform: scale(1.05);
+}
+
+@media (max-width: 640px) {
+  .newsletter-form {
+    flex-direction: column;
+  }
+  
+  .newsletter-box {
+    padding: 2rem;
+  }
+}
+
+/* Categories Carousel */
+.categories-carousel-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.categories-scroll-wrapper {
+  display: flex;
+  gap: 1.5rem;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  padding: 1rem 0;
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+  cursor: grab;
+  width: 100%;
+}
+
+.categories-scroll-wrapper:active {
+  cursor: grabbing;
+  scroll-behavior: auto; /* disable smooth when dragging */
+}
+
+.categories-scroll-wrapper::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
+}
+
+.category-slide {
+  flex: 0 0 calc(25% - 1.125rem); /* Default 4 items */
+  min-width: 250px;
+}
+
+.carousel-nav-btn {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  cursor: pointer;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  color: var(--text);
+  box-shadow: var(--shadow);
+  transition: all 0.3s ease;
+}
+
+.carousel-nav-btn:hover {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+.carousel-nav-btn.left {
+  left: -20px;
+}
+
+.carousel-nav-btn.right {
+  right: -20px;
+}
+
+@media (max-width: 768px) {
+  .carousel-nav-btn {
+    display: none; /* Hide arrows on mobile */
+  }
+  .categories-carousel-container {
+    margin: 0 -1rem; /* Full bleed on mobile */
+  }
+  .categories-scroll-wrapper {
+    padding: 1rem;
+  }
+  .category-slide {
+    flex: 0 0 70%;
+    min-width: 200px;
+  }
+}

@@ -1,0 +1,156 @@
+.orders-page {
+  padding-top: 3rem;
+}
+
+.orders-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 3rem;
+  flex-wrap: wrap;
+  gap: 2rem;
+}
+
+.orders-search {
+  position: relative;
+  max-width: 300px;
+  width: 100%;
+}
+
+.orders-search svg {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+}
+
+.orders-search input {
+  width: 100%;
+  padding: 0.6rem 1rem 0.6rem 2.8rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.order-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-bottom: 2rem;
+  background-color: var(--white);
+}
+
+.order-header-row {
+  background-color: #f6f6f6;
+  padding: 1rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+}
+
+.order-meta-info {
+  display: flex;
+  gap: 3rem;
+}
+
+.meta-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.meta-label {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.meta-val {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-main);
+}
+
+.order-id-info {
+  text-align: right;
+}
+
+.order-links {
+  font-size: 0.85rem;
+  color: var(--primary);
+  margin-top: 0.2rem;
+}
+
+.order-body {
+  padding: 1.5rem;
+}
+
+.order-status-banner h3 {
+  font-size: 1.2rem;
+  margin-bottom: 0.2rem;
+}
+
+.order-status-banner h3.delivered { color: var(--success); }
+.order-status-banner h3.processing { color: var(--accent); }
+
+.order-status-banner p {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-bottom: 1.5rem;
+}
+
+.order-item-detail {
+  display: grid;
+  grid-template-columns: 100px 1fr 200px;
+  gap: 2rem;
+  align-items: flex-start;
+}
+
+.order-item-detail img {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.item-info h4 {
+  margin-bottom: 0.5rem;
+}
+
+.item-desc {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+}
+
+.buy-again {
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+}
+
+.item-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.item-actions .btn {
+  font-size: 0.85rem;
+  padding: 0.5rem;
+}
+
+@media (max-width: 768px) {
+  .order-meta-info {
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  
+  .order-item-detail {
+    grid-template-columns: 80px 1fr;
+  }
+  
+  .item-actions {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+}

@@ -1,0 +1,316 @@
+.hero-banner {
+  position: relative;
+  width: 100%;
+  height: 80vh;
+  min-height: 600px;
+  overflow: hidden;
+  background-color: #0f172a;
+}
+
+.banner-slider {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.slide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1), visibility 1.2s;
+  display: flex;
+  align-items: center;
+}
+
+.slide.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.banner-bg-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  transform: scale(1.05); /* Slight zoom for ken burns effect */
+  transition: transform 6s ease-out;
+}
+
+.slide.active .banner-bg-image {
+  transform: scale(1); /* Shrink to normal scale */
+}
+
+/* Premium dark gradient overlay to ensure text is readable */
+.banner-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg, 
+    rgba(15, 23, 42, 0.95) 0%, 
+    rgba(15, 23, 42, 0.8) 40%, 
+    rgba(15, 23, 42, 0.3) 100%
+  );
+  z-index: 1;
+}
+
+.banner-content-wrapper {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+}
+
+.banner-content {
+  max-width: 600px;
+  padding: 0 1rem;
+}
+
+.banner-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+  margin-bottom: 2rem;
+  transform: translateY(30px);
+  opacity: 0;
+  transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.3s;
+}
+
+.slide.active .banner-badge {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.banner-subtitle {
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.banner-content h1 {
+  font-size: clamp(3rem, 5vw, 4.5rem);
+  line-height: 1.1;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 1.5rem;
+  transform: translateY(40px);
+  opacity: 0;
+  transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.5s;
+}
+
+.slide.active .banner-content h1 {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.banner-content h1 span {
+  /* Dynamic gradient text */
+  background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.banner-content p {
+  font-size: 1.125rem;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 3rem;
+  line-height: 1.6;
+  max-width: 90%;
+  transform: translateY(30px);
+  opacity: 0;
+  transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.7s;
+}
+
+.slide.active .banner-content p {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.banner-btns {
+  transform: translateY(30px);
+  opacity: 0;
+  transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.9s;
+}
+
+.slide.active .banner-btns {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+/* Modern Button Styling */
+.btn-modern {
+  display: inline-flex;
+  align-items: center;
+  background: #fff;
+  color: #0f172a;
+  padding: 0.5rem 0.5rem 0.5rem 1.5rem;
+  border-radius: 50px;
+  font-weight: 600;
+  font-size: 1rem;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  gap: 1rem;
+}
+
+.btn-modern:hover {
+  background: #f8fafc;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px);
+}
+
+.btn-modern .btn-icon {
+  background: #0f172a;
+  color: #fff;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease;
+}
+
+.btn-modern:hover .btn-icon {
+  transform: rotate(-45deg);
+}
+
+/* Navigation & Controls */
+.banner-navigation {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 2rem 1rem;
+  z-index: 10;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  pointer-events: none; /* Let clicks pass through empty space */
+}
+
+.slider-controls {
+  display: flex;
+  gap: 1rem;
+  pointer-events: auto; /* Re-enable clicks for controls */
+}
+
+.slider-nav {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.slider-nav:hover {
+  background: #fff;
+  color: #0f172a;
+  transform: scale(1.1);
+}
+
+.slider-dots-modern {
+  display: flex;
+  gap: 0.75rem;
+  pointer-events: auto;
+}
+
+.dot-modern {
+  width: 40px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: width 0.3s ease;
+}
+
+.dot-modern.active {
+  width: 80px;
+}
+
+.dot-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 0%;
+  background: #fff;
+}
+
+/* Automatically animate progress bar for active dot */
+.dot-modern.active .dot-progress {
+  animation: progress 6s linear forwards;
+}
+
+@keyframes progress {
+  from { width: 0%; }
+  to { width: 100%; }
+}
+
+@media (max-width: 768px) {
+  .hero-banner {
+    height: 70vh;
+  }
+  
+  .banner-overlay {
+    background: linear-gradient(
+      0deg, 
+      rgba(15, 23, 42, 0.95) 0%, 
+      rgba(15, 23, 42, 0.7) 60%, 
+      rgba(15, 23, 42, 0.4) 100%
+    );
+  }
+
+  .banner-content {
+    text-align: center;
+    margin: 0 auto;
+    padding-bottom: 4rem;
+  }
+
+  .banner-badge {
+    margin: 0 auto 1.5rem;
+  }
+
+  .banner-content p {
+    margin: 0 auto 2.5rem;
+  }
+  
+  .banner-btns {
+    display: flex;
+    justify-content: center;
+  }
+
+  .banner-navigation {
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  .slider-controls {
+    display: none; /* Hide arrows on mobile for cleaner look */
+  }
+}
