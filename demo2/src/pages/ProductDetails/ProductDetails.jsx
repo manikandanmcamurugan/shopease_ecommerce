@@ -15,10 +15,12 @@ const ProductDetails = () => {
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
-  const { addToCart } = useCart();
+  const { addToCart, isInCart } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
   const { user } = useAuth();
   const [activeImage, setActiveImage] = useState(null);
+  const [selectedColor, setSelectedColor] = useState('');
+  const [selectedSize, setSelectedSize] = useState('');
   const navigate = useNavigate();
 
   // Rating State
@@ -28,8 +30,8 @@ const ProductDetails = () => {
   const [ratingMessage, setRatingMessage] = useState('');
 
   const handleBuyNow = () => {
-    addToCart(product, quantity);
-    navigate('/checkout');
+    // Bypass the cart and checkout this specific item directly
+    navigate('/checkout', { state: { buyNowItems: [{ ...product, quantity }] } });
   };
 
   const handleRateProduct = async (rateValue) => {
@@ -59,6 +61,13 @@ const ProductDetails = () => {
         setProduct(res.data);
         setActiveImage(res.data.image);
         
+        const variants = res.data.variants || [];
+        const colors = Array.from(new Set(variants.filter(v => v.color).map(v => v.color)));
+        const sizes = Array.from(new Set(variants.filter(v => v.size).map(v => v.size)));
+        
+        if (colors.length > 0) setSelectedColor(colors[0]);
+        if (sizes.length > 0) setSelectedSize(sizes[0]);
+        
         const allProdRes = await productService.getProducts();
         setRelatedProducts(allProdRes.data.filter(p => p.category === res.data.category && p.id !== res.data.id).slice(0, 4));
       } catch (error) {
@@ -74,6 +83,21 @@ const ProductDetails = () => {
   if (loading) return <Loader />;
   if (!product) return <div className="container"><h2>Product not found</h2></div>;
 
+  const variants = product.variants || [];
+  const availableColors = Array.from(new Set(variants.filter(v => v.color).map(v => v.color)));
+  const availableSizes = Array.from(new Set(variants.filter(v => v.size).map(v => v.size)));
+
+  const activeVariant = variants.find(v => 
+    (availableColors.length === 0 || v.color === selectedColor) && 
+    (availableSizes.length === 0 || v.size === selectedSize)
+  );
+
+  const displayPrice = activeVariant ? Number(product.price) + Number(activeVariant.additional_price || 0) : Number(product.price);
+  const displayStock = activeVariant ? activeVariant.stock : product.stock;
+  const inStock = displayStock > 0;
+  
+  const imagesList = product.images?.length > 0 ? product.images.map(img => img.image || img) : [product.image];
+
   return (
     <div className="product-details-page container">
       <div className="breadcrumb">
@@ -83,11 +107,11 @@ const ProductDetails = () => {
       <div className="details-grid">
         <div className="image-section">
           <div className="main-image-container">
-            <img src={activeImage} alt={product.name} className="main-image" />
+            <img src={activeImage || imagesList[0]} alt={product.name} className="main-image" />
           </div>
-          {product.images && product.images.length > 1 && (
+          {imagesList.length > 1 && (
             <div className="thumbnail-gallery">
-              {product.images.map((img, i) => (
+              {imagesList.map((img, i) => (
                 <div 
                   key={i} 
                   className={`thumbnail ${activeImage === img ? 'active' : ''}`}
@@ -104,44 +128,50 @@ const ProductDetails = () => {
           <span className="details-category">{product.category}</span>
           <h1 className="details-name">{product.name}</h1>
           
-          <div className="details-rating">
-            <div className="stars">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} size={18} fill={i < Math.floor(product.rating) ? "#f59e0b" : "none"} color="#f59e0b" />
-              ))}
-            </div>
-            <span className="rating-value">{product.rating}</span>
-            <span className="review-count">({product.reviews} reviews)</span>
-          </div>
-
-          <p className="details-price">₹{product.price.toFixed(2)}</p>
+          <p className="details-price">₹{displayPrice.toFixed(2)}</p>
           <p className="details-desc">{product.description}</p>
+          
+          <p className="details-stock" style={{ color: inStock ? '#16a34a' : '#ef4444', fontWeight: '500', marginBottom: '1rem' }}>
+            {inStock ? `In Stock (${displayStock} available)` : 'Out of Stock'}
+          </p>
 
-          <div className="user-rating-section" style={{ marginTop: '20px', marginBottom: '20px' }}>
-            <h4 style={{ marginBottom: '10px' }}>Rate this product:</h4>
-            {user ? (
-              <div className="interactive-stars" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                {[...Array(5)].map((_, i) => {
-                  const starValue = i + 1;
-                  return (
-                    <Star 
-                      key={i} 
-                      size={24} 
-                      onMouseEnter={() => !isSubmittingRating && setHoverRating(starValue)}
-                      onMouseLeave={() => !isSubmittingRating && setHoverRating(0)}
-                      onClick={() => !isSubmittingRating && handleRateProduct(starValue)}
-                      fill={starValue <= (hoverRating || userRating) ? "#f59e0b" : "none"} 
-                      color={starValue <= (hoverRating || userRating) ? "#f59e0b" : "#ccc"} 
-                      style={{ cursor: isSubmittingRating ? 'default' : 'pointer', transition: 'color 0.2s' }}
-                    />
-                  );
-                })}
-                {ratingMessage && <span style={{ marginLeft: '10px', fontSize: '14px', color: ratingMessage.includes('Thanks') ? '#10b981' : '#ef4444' }}>{ratingMessage}</span>}
-              </div>
-            ) : (
-              <p className="login-prompt" style={{ fontSize: '14px', color: '#6b7280' }}>Please <Link to="/login" style={{ color: '#2563eb', textDecoration: 'underline' }}>login</Link> to rate this product.</p>
-            )}
-          </div>
+          {(availableColors.length > 0 || availableSizes.length > 0) && (
+            <div className="product-variants-selectors">
+              {availableColors.length > 0 && (
+                <div className="variant-group">
+                  <h4>Color: <span>{selectedColor}</span></h4>
+                  <div className="variant-options">
+                    {availableColors.map(color => (
+                      <button 
+                        key={color} 
+                        className={`variant-btn color-btn ${selectedColor === color ? 'active' : ''}`}
+                        onClick={() => setSelectedColor(color)}
+                      >
+                        {color}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {availableSizes.length > 0 && (
+                <div className="variant-group">
+                  <h4>Size: <span>{selectedSize}</span></h4>
+                  <div className="variant-options">
+                    {availableSizes.map(size => (
+                      <button 
+                        key={size} 
+                        className={`variant-btn size-btn ${selectedSize === size ? 'active' : ''}`}
+                        onClick={() => setSelectedSize(size)}
+                      >
+                        {size}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="details-actions">
             <div className="quantity-selector">
@@ -150,19 +180,34 @@ const ProductDetails = () => {
               <button onClick={() => setQuantity(quantity + 1)}>+</button>
             </div>
             
-            <button className="btn btn-primary add-to-cart" onClick={() => addToCart(product, quantity)}>
-              <ShoppingCart size={20} /> Add to Cart
-            </button>
+            {isInCart(product.id) ? (
+              <button className="btn btn-primary add-to-cart in-cart" onClick={() => navigate('/cart')} disabled={!inStock}>
+                <ShoppingCart size={20} /> In Cart
+              </button>
+            ) : (
+              <button className="btn btn-primary add-to-cart" onClick={(e) => addToCart({...product, price: displayPrice, selectedVariant: activeVariant}, quantity, e)} disabled={!inStock}>
+                <ShoppingCart size={20} /> Add to Cart
+              </button>
+            )}
             
-            <button className="btn btn-secondary buy-now-btn-detail" onClick={handleBuyNow}>
+            <button className="btn btn-secondary buy-now-btn-detail" onClick={handleBuyNow} disabled={!inStock}>
               Buy Now
             </button>
             
             <button 
               className={`btn btn-outline wishlist-btn ${isInWishlist(product.id) ? 'active' : ''}`}
-              onClick={() => toggleWishlist(product)}
+              onClick={(e) => toggleWishlist(product, e)}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '48px', height: '48px', padding: 0 }}
             >
-              <Heart size={20} fill={isInWishlist(product.id) ? "currentColor" : "none"} />
+              <Heart 
+                style={{ 
+                  width: '24px', 
+                  height: '24px', 
+                  stroke: isInWishlist(product.id) ? '#ef4444' : '#64748b',
+                  fill: isInWishlist(product.id) ? '#ef4444' : 'none',
+                  strokeWidth: 2
+                }}
+              />
             </button>
           </div>
 

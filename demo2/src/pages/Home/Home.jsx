@@ -123,7 +123,7 @@ const Home = () => {
 
   return (
     <div className="home-page">
-      {/* <Banner /> */}
+      <Banner />
 
       {/* Categories Section */}
       <section className="section container">

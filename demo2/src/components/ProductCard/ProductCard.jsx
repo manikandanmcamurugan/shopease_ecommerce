@@ -6,16 +6,16 @@ import { useWishlist } from '../../context/WishlistContext';
 import './ProductCard.css';
 
 const ProductCard = ({ product }) => {
-  const { addToCart } = useCart();
+  const { addToCart, isInCart } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
   const navigate = useNavigate();
-
   const handleBuyNow = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    addToCart(product);
-    navigate('/checkout');
+    // Bypass the cart and checkout this specific item directly
+    navigate('/checkout', { state: { buyNowItems: [{ ...product, quantity: 1 }] } });
   };
+
 
   return (
     <div className="product-card">
@@ -24,16 +24,17 @@ const ProductCard = ({ product }) => {
           <img src={product.image} alt={product.name} loading="lazy" />
         </Link>
         <div className="product-actions">
+
           <button 
             className={`action-btn ${isInWishlist(product.id) ? 'active' : ''}`}
-            onClick={() => toggleWishlist(product)}
+            onClick={(e) => toggleWishlist(product, e)}
             title="Add to Wishlist"
           >
             <Heart size={20} fill={isInWishlist(product.id) ? "currentColor" : "none"} />
           </button>
           <button 
             className="action-btn"
-            onClick={() => addToCart(product)}
+            onClick={(e) => addToCart(product, 1, e)}
             title="Add to Cart"
           >
             <ShoppingCart size={20} />
@@ -48,23 +49,26 @@ const ProductCard = ({ product }) => {
         <Link to={`/products/${product.id}`}>
           <h3 className="product-name">{product.name}</h3>
         </Link>
-        <div className="product-rating">
-          <Star size={14} fill="#f59e0b" color="#f59e0b" />
-          <span>{product.rating}</span>
-          <span className="reviews-count">({product.reviews})</span>
-        </div>
+
         <div className="product-price">
           <span className="price">₹{Number(product.price || 0).toFixed(2)}</span>
           <div className="card-buttons">
-            <button className="add-cart-btn" onClick={() => addToCart(product)}>
-              Add to Cart
-            </button>
+            {isInCart(product.id) ? (
+              <button className="add-cart-btn in-cart" onClick={() => navigate('/cart')}>
+                In Cart
+              </button>
+            ) : (
+              <button className="add-cart-btn" onClick={(e) => addToCart(product, 1, e)}>
+                Add to Cart
+              </button>
+            )}
             <button className="buy-now-btn" onClick={handleBuyNow}>
               Buy Now
             </button>
           </div>
         </div>
       </div>
+
     </div>
   );
 };

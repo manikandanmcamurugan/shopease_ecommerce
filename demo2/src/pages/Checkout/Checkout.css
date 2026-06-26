@@ -305,3 +305,220 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Flipkart Payment Layout Styles */
+.flipkart-payment-container {
+  padding: 0;
+  background-color: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.flipkart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding: 0.5rem 1rem;
+}
+
+.flipkart-header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.back-arrow {
+  background: none;
+  color: #000;
+  cursor: pointer;
+}
+
+.header-text .step-count {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.header-text h2 {
+  font-size: 1.25rem;
+  margin: 0;
+}
+
+.secure-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  background-color: #f1f3f6;
+  padding: 0.35rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #666;
+}
+
+.total-amount-bar {
+  background-color: #f0f7ff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.total-amount-text {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #2874f0;
+  font-weight: 500;
+}
+
+.total-amount-val {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #2874f0;
+}
+
+.payment-accordion {
+  background-color: #fff;
+  border: 1px solid #f0f0f0;
+  border-radius: 4px;
+  box-shadow: 0 1px 2px 0 rgba(0,0,0,0.1);
+}
+
+.payment-method {
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.payment-method:last-child {
+  border-bottom: none;
+}
+
+.payment-method-header {
+  display: flex;
+  align-items: flex-start;
+  padding: 1.25rem;
+  cursor: pointer;
+  background-color: #fff;
+}
+
+.payment-method-header.no-expand {
+  cursor: default;
+}
+
+.pm-icon-wrapper {
+  margin-right: 1rem;
+  color: #333;
+}
+
+.pm-details {
+  flex: 1;
+}
+
+.pm-details h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 0.25rem 0;
+  color: #212121;
+}
+
+.pm-details p {
+  font-size: 0.85rem;
+  color: #878787;
+  margin: 0;
+}
+
+.offers-text {
+  color: #388e3c !important;
+  margin-top: 0.25rem !important;
+  font-weight: 500;
+}
+
+.pm-chevron {
+  color: #878787;
+  transition: transform 0.2s;
+}
+
+.payment-method.active .pm-chevron {
+  transform: rotate(180deg);
+}
+
+.payment-method.active .payment-method-header {
+  background-color: #f9f9f9;
+}
+
+.payment-method-body {
+  padding: 1.25rem;
+  background-color: #f9f9f9;
+  border-top: 1px solid #f0f0f0;
+}
+
+.avoid-fee-text {
+  font-size: 0.85rem;
+  color: #878787;
+  margin-bottom: 1rem;
+}
+
+.btn-flipkart-yellow {
+  background-color: var(--primary);
+  color: #fff;
+  border: none;
+  width: 100%;
+  padding: 0.85rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 4px;
+  cursor: pointer;
+  box-shadow: 0 1px 2px 0 rgba(0,0,0,0.1);
+  transition: background-color 0.2s;
+}
+
+.btn-flipkart-yellow:hover {
+  background-color: var(--primary-hover);
+}
+
+.card-form-flipkart .form-control {
+  margin-bottom: 1rem;
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+}
+
+.pm-action-link {
+  color: #2874f0;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.pm-unavailable {
+  color: #878787;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.payment-method.disabled .pm-details h3,
+.payment-method.disabled .pm-icon-wrapper {
+  color: #878787;
+}
+
+.happy-customers-footer {
+  text-align: center;
+  padding: 3rem 0;
+  color: #878787;
+}
+
+.happy-customers-footer p {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.happy-customers-footer .smiley-face {
+  font-size: 2rem;
+  color: #c2c2c2;
+}

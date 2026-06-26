@@ -50,9 +50,11 @@ const productService = {
         rating: p.rating?.rate ?? p.rating ?? 4.0,
         reviews: p.rating?.count ?? 0,
 
-        isFeatured: p.is_featured ?? p.isFeatured ?? (index % 4 === 0 || index < 4),
-        isNewArrival: p.is_new_arrival ?? p.isNewArrival ?? (index % 3 === 0 || index < 6),
-        isBestSeller: p.is_best_seller ?? p.isBestSeller ?? ((p.rating?.rate ?? p.rating ?? 4) > 4.5 || index % 5 === 0),
+        isFeatured: p.is_featured || p.isFeatured || (index % 4 === 0 || index < 4),
+        isNewArrival: p.is_new_arrival || p.isNewArrival || (index % 3 === 0 || index < 6),
+        isBestSeller: p.is_best_seller || p.isBestSeller || ((p.rating?.rate ?? p.rating ?? 4) > 4.5 || index % 5 === 0),
+        variants: p.variants || [],
+        images: p.images || []
       }));
 
       return { data: products };
@@ -81,9 +83,11 @@ const productService = {
           rating: p.rating?.rate ?? p.rating ?? 4.0,
           reviews: p.rating?.count ?? 0,
 
-          isFeatured: p.is_featured ?? p.isFeatured ?? false,
-          isNewArrival: p.is_new_arrival ?? p.isNewArrival ?? false,
-          isBestSeller: p.is_best_seller ?? p.isBestSeller ?? ((p.rating?.rate ?? p.rating ?? 4) > 4.5),
+          isFeatured: p.is_featured || p.isFeatured || false,
+          isNewArrival: p.is_new_arrival || p.isNewArrival || false,
+          isBestSeller: p.is_best_seller || p.isBestSeller || ((p.rating?.rate ?? p.rating ?? 4) > 4.5),
+          variants: p.variants || [],
+          images: p.images || []
         },
       };
     } catch (error) {
@@ -152,10 +156,11 @@ const productService = {
         if (typeof c === 'object') {
           return {
             name: c.name || c.category_name,
-            image: c.image || c.category_image || null
+            image: c.image || c.category_image || null,
+            description: c.description || null
           };
         }
-        return { name: c, image: null };
+        return { name: c, image: null, description: null };
       });
 
       return {
@@ -166,6 +171,10 @@ const productService = {
       return { data: [{ name: 'All', image: null }] };
     }
   },
+  
+  getBanners: async () => {
+    return api.get('/banners/');
+  }
 };
 
 export default productService;

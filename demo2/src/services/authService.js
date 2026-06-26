@@ -21,12 +21,22 @@ const authService = {
   },
   getProfile: async () => {
     try {
-      const response = await api.get('/users/1');
+      const response = await api.get('/auth/profile/');
       return {
         data: response.data
       };
     } catch (error) {
       console.error("Fetch profile error:", error);
+      throw error;
+    }
+  },
+  updateProfile: async (userId, formData) => {
+    try {
+      // Allow axios to automatically set the multipart/form-data content type and the boundary
+      const response = await api.put(`/auth/profile/`, formData);
+      return response;
+    } catch (error) {
+      console.error("Update profile error:", error);
       throw error;
     }
   }

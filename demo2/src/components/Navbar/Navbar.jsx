@@ -45,7 +45,7 @@ const Navbar = () => {
           <li><Link to="/contact" onClick={() => setIsMenuOpen(false)}>Contact</Link></li>
           
           <li className="nav-icon-link">
-            <Link to="/wishlist" onClick={() => setIsMenuOpen(false)}>
+            <Link to="/wishlist" onClick={() => setIsMenuOpen(false)} id="nav-wishlist-icon">
               <Heart size={22} />
               <span className="icon-label">Wishlist</span>
               {wishlist.length > 0 && <span className="badge">{wishlist.length}</span>}
@@ -53,7 +53,7 @@ const Navbar = () => {
           </li>
           
           <li className="nav-icon-link">
-            <Link to="/cart" onClick={() => setIsMenuOpen(false)}>
+            <Link to="/cart" onClick={() => setIsMenuOpen(false)} id="nav-cart-icon">
               <ShoppingCart size={22} />
               <span className="icon-label">Cart</span>
               {cartCount > 0 && <span className="badge">{cartCount}</span>}
@@ -62,12 +62,18 @@ const Navbar = () => {
 
           <li className="nav-auth">
             {user ? (
-              <div className="user-profile">
-                <Link to="/profile" className="profile-link">
-                  <User size={22} />
-                  <span>{user.name}</span>
-                </Link>
-                <button onClick={logout} className="logout-btn">Logout</button>
+              <div className="user-profile-wrapper" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <div className="user-profile">
+                  <Link to="/profile" className="profile-link" onClick={() => setIsMenuOpen(false)}>
+                    <div className="nav-avatar">
+                      {(user?.name || user?.username || 'U').charAt(0).toUpperCase()}
+                    </div>
+                  </Link>
+                  <div className="profile-dropdown name-only-dropdown">
+                    <span className="nav-greeting">Hi! {user?.name || user?.username || 'User'}</span>
+                  </div>
+                </div>
+                <button onClick={() => { logout(); setIsMenuOpen(false); }} className="logout-btn">Logout</button>
               </div>
             ) : (
               <Link to="/login" className="btn btn-primary login-btn" onClick={() => setIsMenuOpen(false)}>

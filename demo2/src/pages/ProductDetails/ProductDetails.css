@@ -209,8 +209,19 @@
 }
 
 .feature-item p {
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   color: var(--text-muted);
+}
+
+.add-to-cart.in-cart {
+  background-color: var(--success, #10b981);
+  border-color: var(--success, #10b981);
+  color: white;
+}
+
+.add-to-cart.in-cart:hover {
+  background-color: #059669;
+  border-color: #059669;
 }
 
 .related-section {
@@ -229,3 +240,50 @@
     gap: 2rem;
   }
 }
+
+.product-variants-selectors {
+  margin: 1.5rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.variant-group h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.8rem;
+}
+
+.variant-group h4 span {
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.variant-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+}
+
+.variant-btn {
+  padding: 0.6rem 1.2rem;
+  border: 1px solid var(--border);
+  background: var(--background);
+  border-radius: var(--radius);
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--text-main);
+}
+
+.variant-btn:hover {
+  border-color: var(--primary);
+  background: var(--card-bg);
+}
+
+.variant-btn.active {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: white;
+}
+

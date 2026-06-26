@@ -1,0 +1,60 @@
+.toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 9999;
+  pointer-events: none; /* allows clicking through the container */
+}
+
+.toast {
+  pointer-events: auto; /* allows clicking the toast if needed */
+  min-width: 250px;
+  background-color: var(--card-bg, #ffffff);
+  color: var(--text-main, #1e293b);
+  padding: 16px 20px;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1), 0 4px 10px rgba(0, 0, 0, 0.05);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  transform: translateY(100px);
+  opacity: 0;
+  animation: slideIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, fadeOut 0.4s ease forwards 2.6s;
+}
+
+.toast-success {
+  border-left: 4px solid var(--success, #22c55e);
+}
+
+.toast-error {
+  border-left: 4px solid var(--error, #ef4444);
+}
+
+.toast-info {
+  border-left: 4px solid var(--primary, #4361ee);
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(50px) scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(20px) scale(0.9);
+    opacity: 0;
+  }
+}

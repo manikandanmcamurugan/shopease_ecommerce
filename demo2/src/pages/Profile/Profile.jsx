@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { User, Mail, Phone, MapPin, Package, Edit2, LogOut } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { User, Mail, Phone, MapPin, Package, Edit2, LogOut, Camera, Save, X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import authService from '../../services/authService';
 import { orderService } from '../../services/cartService';
@@ -12,6 +12,14 @@ const Profile = () => {
   const [profile, setProfile] = useState(null);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Edit Mode States
+  const [isEditing, setIsEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [editForm, setEditForm] = useState({ name: '', email: '', phone: '', address: '' });
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -29,8 +37,71 @@ const Profile = () => {
     fetchData();
   }, []);
 
+  const handleEditToggle = () => {
+    if (!isEditing) {
+      // Start editing
+      setEditForm({
+        name: profile?.name || profile?.username || user?.name || user?.username || '',
+        email: profile?.email || user?.email || '',
+        phone: profile?.phone || profile?.phone_number || user?.phone || user?.phone_number || '',
+        address: profile?.address || user?.address || ''
+      });
+      setImagePreview(null);
+      setSelectedImage(null);
+    }
+    setIsEditing(!isEditing);
+  };
+
+  const handleInputChange = (e) => {
+    setEditForm({ ...editForm, [e.target.name]: e.target.value });
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedImage(file);
+      setImagePreview(URL.createObjectURL(file));
+    }
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const formData = new FormData();
+      formData.append('name', editForm.name);
+      formData.append('username', editForm.name); // Often backends use username
+      formData.append('email', editForm.email);
+      formData.append('phone_number', editForm.phone); // Login used phone_number
+      formData.append('phone', editForm.phone); // Just in case
+      formData.append('address', editForm.address);
+      if (selectedImage) {
+        formData.append('image', selectedImage);
+        formData.append('profile_picture', selectedImage); // Common alternative
+      }
+      
+      const userId = user?.id || 1;
+      await authService.updateProfile(userId, formData);
+      
+      // Refresh
+      const profRes = await authService.getProfile();
+      setProfile(profRes.data);
+      setIsEditing(false);
+    } catch (err) {
+      console.error('Failed to update profile:', err);
+      // Optional: show error toast here
+    } finally {
+      setSaving(false);
+    }
+  };
+
   if (loading) return <Loader />;
   if (!user) return <div className="container"><h2>Please login to view profile</h2></div>;
+
+  const displayName = profile?.name || profile?.username || user?.name || user?.username || 'User';
+  const displayEmail = profile?.email || user?.email || 'user@example.com';
+  const displayPhone = profile?.phone || profile?.phone_number || user?.phone || user?.phone_number || 'N/A';
+  const displayAddress = profile?.address || user?.address || 'N/A';
+  const displayImage = imagePreview || profile?.image || profile?.avatar || null;
 
   return (
     <div className="profile-page container">
@@ -39,13 +110,42 @@ const Profile = () => {
       <div className="profile-grid">
         <aside className="profile-sidebar">
           <div className="user-info-card">
-            <div className="user-avatar">
-              {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
+            
+            {/* Avatar Section */}
+            <div 
+              className={`user-avatar ${isEditing ? 'editable' : ''}`}
+              onClick={() => isEditing && fileInputRef.current?.click()}
+            >
+              {displayImage ? (
+                <img src={displayImage} alt="Profile" className="avatar-img" />
+              ) : (
+                displayName.charAt(0).toUpperCase()
+              )}
+              {isEditing && (
+                <div className="avatar-overlay">
+                  <Camera size={24} />
+                </div>
+              )}
             </div>
-            <h3>{user?.name || 'User'}</h3>
-            <p>{user?.email || 'user@example.com'}</p>
-            <button className="btn btn-primary edit-profile">
-              <Edit2 size={16} /> Edit Profile
+            
+            {/* Hidden file input */}
+            <input 
+              type="file" 
+              ref={fileInputRef} 
+              style={{ display: 'none' }} 
+              accept="image/*"
+              onChange={handleFileChange} 
+            />
+
+            <h3>{displayName}</h3>
+            <p>{displayEmail}</p>
+            
+            <button 
+              className={`btn ${isEditing ? 'btn-outline' : 'btn-primary'} edit-profile`}
+              onClick={handleEditToggle}
+              disabled={saving}
+            >
+              {isEditing ? <><X size={16} /> Cancel</> : <><Edit2 size={16} /> Edit Profile</>}
             </button>
           </div>
           
@@ -58,23 +158,71 @@ const Profile = () => {
 
         <main className="profile-content">
           <section className="profile-section">
-            <h2>Personal Information</h2>
+            <div className="section-header-inline">
+              <h2>Personal Information</h2>
+              {isEditing && (
+                <button className="btn btn-primary save-btn" onClick={handleSave} disabled={saving}>
+                  {saving ? 'Saving...' : <><Save size={16} /> Save Changes</>}
+                </button>
+              )}
+            </div>
+            
             <div className="info-grid">
               <div className="info-item">
                 <label>Full Name</label>
-                <div className="info-val">{profile?.name || user?.name || 'N/A'}</div>
+                {isEditing ? (
+                  <input 
+                    type="text" 
+                    name="name" 
+                    className="form-control" 
+                    value={editForm.name} 
+                    onChange={handleInputChange} 
+                  />
+                ) : (
+                  <div className="info-val">{displayName}</div>
+                )}
               </div>
               <div className="info-item">
                 <label>Email Address</label>
-                <div className="info-val">{profile?.email || user?.email || 'N/A'}</div>
+                {isEditing ? (
+                  <input 
+                    type="email" 
+                    name="email" 
+                    className="form-control" 
+                    value={editForm.email} 
+                    onChange={handleInputChange} 
+                  />
+                ) : (
+                  <div className="info-val">{displayEmail}</div>
+                )}
               </div>
               <div className="info-item">
                 <label>Phone Number</label>
-                <div className="info-val">{profile?.phone || 'N/A'}</div>
+                {isEditing ? (
+                  <input 
+                    type="tel" 
+                    name="phone" 
+                    className="form-control" 
+                    value={editForm.phone} 
+                    onChange={handleInputChange} 
+                  />
+                ) : (
+                  <div className="info-val">{displayPhone}</div>
+                )}
               </div>
               <div className="info-item">
                 <label>Default Address</label>
-                <div className="info-val">{profile?.address || 'N/A'}</div>
+                {isEditing ? (
+                  <input 
+                    type="text" 
+                    name="address" 
+                    className="form-control" 
+                    value={editForm.address} 
+                    onChange={handleInputChange} 
+                  />
+                ) : (
+                  <div className="info-val">{displayAddress}</div>
+                )}
               </div>
             </div>
           </section>

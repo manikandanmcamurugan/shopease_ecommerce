@@ -1,15 +1,30 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { CreditCard, Truck, ShieldCheck, CheckCircle } from 'lucide-react';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
+import { CreditCard, Truck, ShieldCheck, CheckCircle, ChevronDown, Banknote, Smartphone, Gift, Calendar, Lock, ArrowLeft } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
+import { useAuth } from '../../context/AuthContext';
+import { orderService } from '../../services/cartService';
 import './Checkout.css';
 
 const Checkout = () => {
+  const { user } = useAuth();
   const { cartItems, cartTotal, clearCart } = useCart();
+  const location = useLocation();
+  
+  // If the user came from "Buy Now", we use the specific item passed in state
+  const buyNowItems = location.state?.buyNowItems;
+  const checkoutItems = buyNowItems || cartItems;
+  
+  // Recalculate total if we are using isolated buyNowItems
+  const checkoutTotal = buyNowItems 
+    ? buyNowItems.reduce((acc, item) => acc + (Number(item.price ?? item.unit_price ?? item.product_price ?? 0) * (item.quantity ?? 1)), 0)
+    : cartTotal;
+
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     cardName: '', cardNumber: '', expiry: '', cvc: ''
   });
+  const [selectedPayment, setSelectedPayment] = useState('card');
   
   const [addresses, setAddresses] = useState([]);
   const [selectedAddressId, setSelectedAddressId] = useState(null);
@@ -83,8 +98,32 @@ const Checkout = () => {
     }
   };
 
-  const handlePlaceOrder = (e) => {
+  const handlePlaceOrder = async (e) => {
     e.preventDefault();
+    
+    try {
+      const orderData = {
+        user_id: user?.id || 1,
+        email: user?.email || addressData.email || 'guest@example.com',
+        shipping_name: addressData.firstName ? `${addressData.firstName} ${addressData.lastName}` : (user?.name || 'Guest'),
+        total_amount: checkoutTotal * 1.1,
+        status: 'Processing',
+        payment_method: selectedPayment,
+        shipping_address: addresses.find(a => a.id === selectedAddressId) || addressData,
+        items: checkoutItems.map(item => ({
+          product_id: item.id || item.product?.id || 1,
+          product_name: item.name || item.product?.name || 'Product',
+          image: item.image || item.product?.image || '',
+          quantity: item.quantity || 1,
+          price: item.price || item.unit_price || item.product?.price || 0
+        }))
+      };
+      
+      await orderService.placeOrder(orderData);
+    } catch (err) {
+      console.error('Error placing order:', err);
+    }
+
     setStep(3); // Success step
     setTimeout(() => {
       clearCart();
@@ -92,7 +131,7 @@ const Checkout = () => {
     }, 5000);
   };
 
-  if (cartItems.length === 0 && step !== 3) {
+  if (checkoutItems.length === 0 && step !== 3) {
     navigate('/cart');
     return null;
   }
@@ -195,49 +234,131 @@ const Checkout = () => {
             )}
           </div>
           
-          <OrderSummary cartItems={cartItems} cartTotal={cartTotal} />
+          <OrderSummary cartItems={checkoutItems} cartTotal={checkoutTotal} />
         </div>
       )}
 
       {step === 2 && (
         <div className="checkout-layout">
-          <div className="checkout-form-container">
-            <h2>Payment Method</h2>
-            <form onSubmit={handlePlaceOrder} className="order-form">
-              <div className="payment-options">
-                <div className="payment-option active">
-                  <CreditCard size={20} />
-                  <span>Credit / Debit Card</span>
+          <div className="checkout-form-container flipkart-payment-container">
+            
+            <div className="flipkart-header">
+              <div className="flipkart-header-left">
+                <button className="back-arrow" onClick={() => setStep(1)}><ArrowLeft size={20} /></button>
+                <div className="header-text">
+                  <span className="step-count">Step 3 of 3</span>
+                  <h2>Payments</h2>
+                </div>
+              </div>
+              <div className="secure-badge"><Lock size={14}/> 100% Secure</div>
+            </div>
+
+            <div className="total-amount-bar">
+              <div className="total-amount-text">Total Amount <ChevronDown size={16}/></div>
+              <div className="total-amount-val">₹{Math.round(checkoutTotal * 1.1)}</div>
+            </div>
+
+            <div className="payment-accordion">
+              
+              {/* UPI */}
+              <div className={`payment-method ${selectedPayment === 'upi' ? 'active' : ''}`}>
+                <div className="payment-method-header" onClick={() => setSelectedPayment('upi')}>
+                  <div className="pm-icon-wrapper"><Smartphone size={20} /></div>
+                  <div className="pm-details">
+                    <h3>UPI</h3>
+                    <p>Pay by any UPI app</p>
+                    <p className="offers-text">Save upto ₹20 • 14 offers available</p>
+                  </div>
+                  <div className="pm-chevron"><ChevronDown size={20} /></div>
+                </div>
+                {selectedPayment === 'upi' && (
+                  <div className="payment-method-body">
+                    <p className="avoid-fee-text">Avoid this fee by paying online now.</p>
+                    <button className="btn-flipkart-yellow" onClick={handlePlaceOrder}>Place Order</button>
+                  </div>
+                )}
+              </div>
+
+              {/* Credit / Debit Card */}
+              <div className={`payment-method ${selectedPayment === 'card' ? 'active' : ''}`}>
+                <div className="payment-method-header" onClick={() => setSelectedPayment('card')}>
+                  <div className="pm-icon-wrapper"><CreditCard size={20} /></div>
+                  <div className="pm-details">
+                    <h3>Credit / Debit / ATM Card</h3>
+                    <p>Add and secure cards as per RBI guidelines</p>
+                    <p className="offers-text">Get upto 5% cashback • 2 offers available</p>
+                  </div>
+                  <div className="pm-chevron"><ChevronDown size={20} /></div>
+                </div>
+                {selectedPayment === 'card' && (
+                  <div className="payment-method-body">
+                    <form onSubmit={handlePlaceOrder} className="card-form-flipkart">
+                      <div className="form-group">
+                        <input type="text" name="cardNumber" className="form-control" placeholder="Card Number" onChange={handleInputChange} required />
+                      </div>
+                      <div className="form-row">
+                        <div className="form-group">
+                          <input type="text" name="expiry" className="form-control" placeholder="MM/YY" onChange={handleInputChange} required />
+                        </div>
+                        <div className="form-group">
+                          <input type="password" name="cvc" className="form-control" placeholder="CVC" onChange={handleInputChange} required />
+                        </div>
+                      </div>
+                      <p className="avoid-fee-text">Avoid this fee by paying online now.</p>
+                      <button type="submit" className="btn-flipkart-yellow">Place Order</button>
+                    </form>
+                  </div>
+                )}
+              </div>
+
+              {/* Cash on Delivery */}
+              <div className={`payment-method ${selectedPayment === 'cod' ? 'active' : ''}`}>
+                <div className="payment-method-header" onClick={() => setSelectedPayment('cod')}>
+                  <div className="pm-icon-wrapper"><Banknote size={20} /></div>
+                  <div className="pm-details">
+                    <h3>Cash on Delivery</h3>
+                  </div>
+                  <div className="pm-chevron"><ChevronDown size={20} /></div>
+                </div>
+                {selectedPayment === 'cod' && (
+                  <div className="payment-method-body">
+                    <button className="btn-flipkart-yellow" onClick={handlePlaceOrder}>Place Order</button>
+                  </div>
+                )}
+              </div>
+
+              {/* Gift Card */}
+              <div className="payment-method">
+                <div className="payment-method-header no-expand">
+                  <div className="pm-icon-wrapper"><Gift size={20} /></div>
+                  <div className="pm-details">
+                    <h3>Have a ShopEase Gift Card?</h3>
+                  </div>
+                  <div className="pm-action-link">Add</div>
+                </div>
+              </div>
+
+              {/* EMI */}
+              <div className="payment-method disabled">
+                <div className="payment-method-header no-expand">
+                  <div className="pm-icon-wrapper"><Calendar size={20} /></div>
+                  <div className="pm-details">
+                    <h3>EMI</h3>
+                  </div>
+                  <div className="pm-unavailable">Unavailable</div>
                 </div>
               </div>
               
-              <div className="form-group">
-                <label>Name on Card</label>
-                <input type="text" name="cardName" className="form-control" placeholder="John Doe" onChange={handleInputChange} required />
-              </div>
-              <div className="form-group">
-                <label>Card Number</label>
-                <input type="text" name="cardNumber" className="form-control" placeholder="0000 0000 0000 0000" onChange={handleInputChange} required />
-              </div>
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Expiry (MM/YY)</label>
-                  <input type="text" name="expiry" className="form-control" placeholder="MM/YY" onChange={handleInputChange} required />
-                </div>
-                <div className="form-group">
-                  <label>CVC</label>
-                  <input type="password" name="cvc" className="form-control" placeholder="•••" onChange={handleInputChange} required />
-                </div>
-              </div>
-              
-              <div className="form-actions">
-                <button type="button" className="btn btn-outline" onClick={() => setStep(1)}>Back</button>
-                <button type="submit" className="btn btn-primary place-order-btn">Place Order (₹{(cartTotal * 1.1).toFixed(2)})</button>
-              </div>
-            </form>
+            </div>
+            
+            <div className="happy-customers-footer">
+               <p>35 Crore happy customers<br/>and counting!</p>
+               <div className="smiley-face">☺</div>
+            </div>
+
           </div>
 
-          <OrderSummary cartItems={cartItems} cartTotal={cartTotal} />
+          <OrderSummary cartItems={checkoutItems} cartTotal={checkoutTotal} />
         </div>
       )}
 
@@ -255,32 +376,49 @@ const Checkout = () => {
   );
 };
 
-const OrderSummary = ({ cartItems, cartTotal }) => (
-  <div className="checkout-summary">
-    <h3>Order Summary</h3>
-    <div className="checkout-items">
-      {cartItems.map(item => (
-        <div key={item.id} className="summary-item">
-          <img src={item.image} alt={item.name} />
-          <div className="item-info">
-            <span className="item-name">{item.name}</span>
-            <span className="item-qty">Qty: {item.quantity}</span>
-          </div>
-          <span className="item-price">₹{(item.price * item.quantity).toFixed(2)}</span>
-        </div>
-      ))}
+const OrderSummary = ({ cartItems, cartTotal }) => {
+  const getPrice = (item) => Number(item.price ?? item.unit_price ?? item.product?.price ?? item.product?.unit_price ?? item.product_price ?? 0);
+  const getName = (item) => item.name ?? item.product?.name ?? item.product_name ?? 'Product';
+  const getImage = (item) => item.image ?? item.product?.image ?? item.product_image ?? '/placeholder.png';
+
+  const shipping = cartTotal > 500 ? 0 : 10;
+  const tax = cartTotal * 0.08;
+  const finalTotal = cartTotal + shipping + tax;
+
+  return (
+    <div className="checkout-summary">
+      <h3>Order Summary</h3>
+      <div className="checkout-items">
+        {cartItems.map(item => {
+          const price = getPrice(item);
+          const name = getName(item);
+          const image = getImage(item);
+          const qty = item.quantity ?? 1;
+
+          return (
+            <div key={item.id} className="summary-item">
+              <img src={image} alt={name} onError={(e) => { e.target.src = '/placeholder.png'; }} />
+              <div className="item-info">
+                <span className="item-name">{name}</span>
+                <span className="item-qty">Qty: {qty}</span>
+              </div>
+              <span className="item-price">₹{(price * qty).toFixed(2)}</span>
+            </div>
+          );
+        })}
+      </div>
+      <div className="summary-calc">
+        <div className="calc-row"><span>Subtotal</span><span>₹{cartTotal.toFixed(2)}</span></div>
+        <div className="calc-row"><span>Shipping</span><span>{shipping === 0 ? 'Free' : `₹${shipping.toFixed(2)}`}</span></div>
+        <div className="calc-row"><span>Tax</span><span>₹{tax.toFixed(2)}</span></div>
+        <div className="calc-total"><span>Total</span><span>₹{finalTotal.toFixed(2)}</span></div>
+      </div>
+      <div className="checkout-trust">
+        <div className="trust-item"><ShieldCheck size={16} /> <span>Secure checkout</span></div>
+        <div className="trust-item"><Truck size={16} /> <span>Insured shipping</span></div>
+      </div>
     </div>
-    <div className="summary-calc">
-      <div className="calc-row"><span>Subtotal</span><span>₹{cartTotal.toFixed(2)}</span></div>
-      <div className="calc-row"><span>Shipping</span><span>Free</span></div>
-      <div className="calc-row"><span>Tax</span><span>₹{(cartTotal * 0.1).toFixed(2)}</span></div>
-      <div className="calc-total"><span>Total</span><span>₹{(cartTotal * 1.1).toFixed(2)}</span></div>
-    </div>
-    <div className="checkout-trust">
-      <div className="trust-item"><ShieldCheck size={16} /> <span>Secure checkout</span></div>
-      <div className="trust-item"><Truck size={16} /> <span>Insured shipping</span></div>
-    </div>
-  </div>
-);
+  );
+};
 
 export default Checkout;

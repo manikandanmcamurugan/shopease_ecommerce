@@ -1,34 +1,29 @@
 import api from './api';
 
 const cartService = {
-  getCart: async () => {
-    // In a real app: return api.get('/cart/');
-    const localCart = localStorage.getItem('shopease_cart');
-    return { data: localCart ? JSON.parse(localCart) : [] };
+  getCart: async (userId = 1) => {
+    return api.get(`/cart/?user_id=${userId}`);
   },
-  addToCart: async (productId, quantity) => {
-    // In a real app: return api.post('/cart/add/', { product_id: productId, quantity });
-    return { success: true };
+  addToCart: async (productId, quantity = 1, userId = 1) => {
+    return api.post('/cart/add/', { user_id: userId, product_id: productId, quantity });
   },
-  removeFromCart: async (productId) => {
-    // In a real app: return api.delete(`/cart/remove/${productId}/`);
-    return { success: true };
+  updateCart: async (productId, quantity, userId = 1) => {
+    return api.put('/cart/update/', { user_id: userId, product_id: productId, quantity });
+  },
+  removeFromCart: async (productId, userId = 1) => {
+    return api.delete('/cart/remove/', { data: { user_id: userId, product_id: productId } });
   },
 };
 
 const orderService = {
   placeOrder: async (orderData) => {
-    // In a real app: return api.post('/orders/', orderData);
-    return { data: { id: 'ORD-' + Math.floor(Math.random() * 10000), ...orderData, status: 'Processing', date: new Date().toLocaleDateString() } };
+    return api.post('/orders/', orderData);
   },
   getOrders: async () => {
-    // In a real app: return api.get('/orders/');
-    return {
-      data: [
-        { id: 'ORD-1234', date: '2023-10-25', total: 129.98, status: 'Delivered' },
-        { id: 'ORD-5678', date: '2023-11-02', total: 59.99, status: 'Processing' }
-      ]
-    };
+    return api.get('/orders/');
+  },
+  getOrder: async (id) => {
+    return api.get(`/orders/${id}/`);
   }
 };
 

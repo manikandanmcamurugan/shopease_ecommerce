@@ -1,4 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
+import authService from '../services/authService';
 
 const AuthContext = createContext();
 
@@ -7,12 +8,29 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is logged in (from localStorage)
-    const storedUser = localStorage.getItem('shopease_user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-    setLoading(false);
+    const initAuth = async () => {
+      try {
+        const storedUser = localStorage.getItem('shopease_user');
+        if (storedUser && storedUser !== "undefined") {
+          setUser(JSON.parse(storedUser));
+        }
+        
+        const token = localStorage.getItem('shopease_token');
+        if (token) {
+          const profileRes = await authService.getProfile();
+          if (profileRes?.data) {
+            setUser(profileRes.data);
+            localStorage.setItem('shopease_user', JSON.stringify(profileRes.data));
+          }
+        }
+      } catch (err) {
+        console.error("Failed to initialize auth:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    initAuth();
   }, []);
 
   const login = (userData) => {

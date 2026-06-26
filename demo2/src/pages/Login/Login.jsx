@@ -35,10 +35,29 @@ const Login = () => {
       if (isLogin) {
         const res = await authService.login(formData.email, formData.password);
         const token = res?.data?.access || res?.data?.token || res?.token;
-        const user = res?.data?.user || res?.data || res?.user;
+        if (token) localStorage.setItem('shopease_token', token);
+        
+        let user = res?.data?.user;
+        if (!user && token) {
+          try {
+            const profileRes = await authService.getProfile();
+            user = profileRes.data;
+          } catch (profileErr) {
+            console.error('Failed to fetch profile:', profileErr);
+          }
+        }
+        
+        // Fallback: use login details if profile fetch fails or lacks data
+        if (!user || (!user.name && !user.username && !user.email)) {
+          user = {
+            ...user,
+            email: formData.email,
+            username: formData.email.split('@')[0],
+            name: formData.email.split('@')[0]
+          };
+        }
         
         updateAuthContext(user);
-        if (token) localStorage.setItem('shopease_token', token);
         navigate('/profile');
       } else {
         const res = await authService.register({ 
@@ -48,10 +67,30 @@ const Login = () => {
           password: formData.password 
         });
         const token = res?.data?.access || res?.data?.token || res?.token || 'mock-jwt-token';
-        const user = res?.data?.user || res?.data || res?.user;
+        if (token) localStorage.setItem('shopease_token', token);
+        
+        let user = res?.data?.user;
+        if (!user && token && token !== 'mock-jwt-token') {
+          try {
+            const profileRes = await authService.getProfile();
+            user = profileRes.data;
+          } catch (profileErr) {
+            console.error('Failed to fetch profile:', profileErr);
+          }
+        }
+        
+        // Fallback: use register details
+        if (!user || (!user.name && !user.username && !user.email)) {
+          user = {
+            ...user,
+            email: formData.email,
+            username: formData.username || formData.email.split('@')[0],
+            name: formData.username || formData.email.split('@')[0],
+            phone: formData.phone_number
+          };
+        }
         
         updateAuthContext(user);
-        if (token) localStorage.setItem('shopease_token', token);
         navigate('/profile');
       }
     } catch (err) {
