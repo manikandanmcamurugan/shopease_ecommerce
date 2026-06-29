@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Package, Search } from 'lucide-react';
 import { orderService } from '../../services/cartService';
+import productService from '../../services/productService';
 import Loader from '../../components/Loader/Loader';
 import { useAuth } from '../../context/AuthContext';
 import './Orders.css';
@@ -14,7 +15,12 @@ const Orders = () => {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const res = await orderService.getOrders();
+        const [res, prodRes] = await Promise.all([
+          orderService.getOrders(),
+          productService.getProducts()
+        ]);
+        const allProducts = prodRes.data || [];
+
         // API may return { results: [] } (paginated) or a plain array
         const rawData = Array.isArray(res.data)
           ? res.data
@@ -32,7 +38,20 @@ const Orders = () => {
           userOrders.map(async (order) => {
             try {
               const detailRes = await orderService.getOrder(order.id);
-              return { ...order, ...detailRes.data };
+              const orderData = { ...order, ...detailRes.data };
+              
+              if (Array.isArray(orderData.items)) {
+                orderData.items = orderData.items.map(item => {
+                  const prodId = typeof item.product === 'object' ? item.product?.id : (item.product ?? item.product_id);
+                  const matchedProduct = allProducts.find(p => p.id === prodId || String(p.id) === String(prodId));
+                  if (matchedProduct) {
+                    item.resolvedImage = matchedProduct.image;
+                    item.resolvedName = matchedProduct.name;
+                  }
+                  return item;
+                });
+              }
+              return orderData;
             } catch (err) {
               console.error(`Failed to fetch details for order ${order.id}`, err);
               return order;
@@ -152,11 +171,11 @@ const Orders = () => {
                     order.items.map((item, idx) => (
                       <div key={idx} className="order-item-detail">
                         <img
-                          src={item.product?.image ?? item.image ?? item.product_image ?? 'https://via.placeholder.com/100'}
-                          alt={item.product?.name ?? item.name ?? item.product_name ?? 'Product'}
+                          src={item.resolvedImage ?? item.product?.image ?? item.image ?? item.product_image ?? 'https://via.placeholder.com/100'}
+                          alt={item.resolvedName ?? item.product?.name ?? item.name ?? item.product_name ?? 'Product'}
                         />
                         <div className="item-info">
-                          <h4>{item.product?.name ?? item.name ?? item.product_name ?? 'Product'}</h4>
+                          <h4>{item.resolvedName ?? item.product?.name ?? item.name ?? item.product_name ?? 'Product'}</h4>
                           <p className="item-desc">
                             Qty: {item.quantity} &nbsp;|&nbsp; ₹{Number(item.price ?? item.unit_price ?? 0).toFixed(2)}
                           </p>

@@ -5,15 +5,16 @@ import { flyToIcon } from '../utils/animations';
 const WishlistContext = createContext();
 
 export const WishlistProvider = ({ children }) => {
-  const [wishlist, setWishlist] = useState([]);
-  const { addToast } = useToast();
-
-  useEffect(() => {
-    const savedWishlist = localStorage.getItem('shopease_wishlist');
-    if (savedWishlist) {
-      setWishlist(JSON.parse(savedWishlist));
+  const [wishlist, setWishlist] = useState(() => {
+    try {
+      const savedWishlist = localStorage.getItem('shopease_wishlist');
+      return savedWishlist ? JSON.parse(savedWishlist) : [];
+    } catch (e) {
+      return [];
     }
-  }, []);
+  });
+  const [loading, setLoading] = useState(false);
+  const { addToast } = useToast();
 
   useEffect(() => {
     localStorage.setItem('shopease_wishlist', JSON.stringify(wishlist));
@@ -58,7 +59,8 @@ export const WishlistProvider = ({ children }) => {
       addToWishlist, 
       removeFromWishlist, 
       isInWishlist,
-      toggleWishlist
+      toggleWishlist,
+      loading
     }}>
       {children}
     </WishlistContext.Provider>

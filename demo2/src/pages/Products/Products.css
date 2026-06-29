@@ -3,6 +3,7 @@
 }
 
 .products-header {
+  margin-top: 2.5rem;
   margin-bottom: 3rem;
   border-bottom: 1px solid var(--border);
   padding-bottom: 1.5rem;
@@ -73,10 +74,12 @@
   border-radius: 5px;
   outline: none;
   -webkit-appearance: none;
+  appearance: none;
 }
 
 .price-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
+  appearance: none;
   width: 18px;
   height: 18px;
   background: var(--primary);
@@ -95,19 +98,110 @@
 }
 
 @media (max-width: 968px) {
+  .products-header {
+    margin-top: 2.5rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    align-items: center;
+  }
+
+  .products-header h1 {
+    font-size: 1.3rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-right: 1rem;
+  }
+
+  .products-header p {
+    font-size: 0.85rem;
+    white-space: nowrap;
+  }
+
   .products-layout {
     grid-template-columns: 1fr;
   }
   
   .filters-sidebar {
     position: static;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1.5rem;
-    padding: 1.5rem;
+    z-index: 100;
+    background: var(--background);
+    display: flex;
+    overflow-x: auto;
+    gap: 0.75rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .filters-sidebar::-webkit-scrollbar {
+    display: none;
   }
   
   .filter-group {
     margin-bottom: 0;
+    border-bottom: none;
+    padding-bottom: 0;
+    flex: 0 0 auto;
+    position: relative;
+  }
+
+  .filter-header {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 50px;
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    margin: 0;
+    color: var(--text-main);
+    gap: 0.5rem;
+  }
+
+  .filter-content {
+    position: fixed;
+    top: calc(var(--nav-height, 70px) + 65px); /* Position it just below the scrollable pill bar */
+    left: 1rem;
+    right: 1rem;
+    background: var(--white);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-lg);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    z-index: 1000;
+    margin-top: 0;
+  }
+}
+
+/* Accordion Filter Styles */
+.filter-header {
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  user-select: none;
+}
+
+.filter-content {
+  display: none;
+  margin-top: 1rem;
+  animation: fadeIn 0.3s ease forwards;
+}
+
+.filter-content.expanded {
+  display: block;
+}
+
+@media (min-width: 969px) {
+  .filter-header {
+    cursor: default;
+  }
+  .filter-toggle-icon {
+    display: none;
+  }
+  .filter-content {
+    display: block !important;
+    animation: none;
   }
 }

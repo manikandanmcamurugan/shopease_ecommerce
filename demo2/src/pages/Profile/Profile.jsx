@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { User, Mail, Phone, MapPin, Package, Edit2, LogOut, Camera, Save, X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
 import authService from '../../services/authService';
 import { orderService } from '../../services/cartService';
 import Loader from '../../components/Loader/Loader';
@@ -8,7 +9,8 @@ import { Link } from 'react-router-dom';
 import './Profile.css';
 
 const Profile = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, updateUser } = useAuth();
+  const { addToast } = useToast();
   const [profile, setProfile] = useState(null);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -24,6 +26,11 @@ const Profile = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const token = localStorage.getItem('shopease_token');
+        if (!token || token === "undefined" || token === "null") {
+          setLoading(false);
+          return;
+        }
         const profRes = await authService.getProfile();
         const orderRes = await orderService.getOrders();
         setProfile(profRes.data);
@@ -85,10 +92,13 @@ const Profile = () => {
       // Refresh
       const profRes = await authService.getProfile();
       setProfile(profRes.data);
+      if (updateUser) updateUser(profRes.data);
       setIsEditing(false);
+      addToast('Profile updated successfully!', 'success');
     } catch (err) {
       console.error('Failed to update profile:', err);
-      // Optional: show error toast here
+      const errMsg = err.response?.data?.message || err.response?.data?.detail || 'Failed to update profile. Please check the fields and try again.';
+      addToast(errMsg, 'error');
     } finally {
       setSaving(false);
     }

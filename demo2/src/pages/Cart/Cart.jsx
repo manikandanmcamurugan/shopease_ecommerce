@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Trash2, Plus, Minus, ShoppingBag, ArrowRight } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
+import Loader from '../../components/Loader/Loader';
 import './Cart.css';
 
 // Resolve price from whatever field the API returns
@@ -22,7 +23,7 @@ const Cart = () => {
   const navigate = useNavigate();
 
   const safeTotal = Number(cartTotal ?? 0);
-  if (loading) return <div className="container">Loading cart...</div>;
+  if (loading) return <div className="cart-page container"><Loader /></div>;
   if (error) return <div className="container">Failed to load cart. Please try again.</div>;
 
 

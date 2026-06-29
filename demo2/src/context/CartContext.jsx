@@ -7,6 +7,8 @@ const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const { addToast } = useToast();
 
   const fetchCart = async () => {
@@ -46,6 +48,9 @@ export const CartProvider = ({ children }) => {
       setCartItems(items);
     } catch (error) {
       console.error('Failed to fetch cart:', error);
+      setError(error.message || 'Failed to load cart');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -134,6 +139,8 @@ export const CartProvider = ({ children }) => {
         cartTotal,
         cartCount,
         isInCart,
+        loading,
+        error,
       }}
     >
       {children}

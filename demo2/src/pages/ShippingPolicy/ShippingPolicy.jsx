@@ -8,8 +8,8 @@ const ShippingPolicy = () => {
         <h1>Shipping Policy</h1>
         <p style={{marginTop:"10px"}}>Everything you need to know about our shipping process.</p>
       </div>
-
       <div className="policy-content" style={{marginTop:"40px"}}>
+
         <section>
           <h2>Processing Time</h2>
           <p>All orders are processed within 1 to 2 business days (excluding weekends and holidays) after receiving your order confirmation email. You will receive another notification when your order has shipped.</p>

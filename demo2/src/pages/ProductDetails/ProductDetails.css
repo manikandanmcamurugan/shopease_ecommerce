@@ -241,6 +241,39 @@
   }
 }
 
+@media (max-width: 576px) {
+  .main-image-container {
+    height: 300px;
+    padding: 1rem;
+  }
+
+  .details-name {
+    font-size: 2rem;
+  }
+
+  .details-price {
+    font-size: 1.6rem;
+  }
+
+  .details-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+  
+  .details-actions > * {
+    width: 100%;
+  }
+
+  .quantity-selector {
+    justify-content: center;
+  }
+
+  .wishlist-btn {
+    width: 100%;
+  }
+}
+
 .product-variants-selectors {
   margin: 1.5rem 0;
   display: flex;

@@ -1,41 +1,68 @@
 import api from './api';
 
-// Optional fallback images (keep if needed)
-import leatherWalletImg from '../images/leather_wallet.png';
-import silverNecklaceImg from '../images/silver_necklace.png';
-import leatherBeltImg from '../images/leather_belt.png';
-import toddlerWinterCoatImg from '../images/toddler_winter_coat.png';
-import kettlebellImg from '../images/kettlebell.png';
-import hoverboardImg from '../images/hoverboard.png';
+// Optional fallback images removed
 
-const API_IMAGE_OVERRIDES = {
-  20: leatherWalletImg,
-  22: silverNecklaceImg,
-  24: leatherBeltImg,
-  35: toddlerWinterCoatImg,
-  41: kettlebellImg,
-  48: hoverboardImg,
+const API_IMAGE_OVERRIDES = {};
+
+let cachedProducts = null;
+let cachedCategories = null;
+
+const fetchAllPages = async (initialUrl) => {
+  let allResults = [];
+  const firstRes = await api.get(initialUrl);
+  const data = firstRes.data;
+  
+  if (!data.results) {
+    return data;
+  }
+  
+  allResults = [...data.results];
+  
+  if (data.count && data.results.length > 0 && data.next) {
+    // Try parallel fetching if it's page number pagination
+    const pageSize = data.results.length;
+    const totalPages = Math.ceil(data.count / pageSize);
+    if (totalPages > 1 && data.next.includes('page=')) {
+      const promises = [];
+      const urlBase = initialUrl.includes('?') ? initialUrl + '&' : initialUrl + '?';
+      // if initialUrl already has query params, we shouldn't just append, but assuming it's clean '/products/'
+      for (let i = 2; i <= totalPages; i++) {
+        promises.push(api.get(`${initialUrl}?page=${i}`));
+      }
+      try {
+        const responses = await Promise.all(promises);
+        responses.forEach(r => {
+          if (r.data && r.data.results) {
+            allResults = [...allResults, ...r.data.results];
+          }
+        });
+        return allResults;
+      } catch (err) {
+        console.warn('Parallel fetch failed, falling back to sequential', err);
+      }
+    }
+    
+    // Sequential fallback
+    let nextUrl = data.next;
+    while (nextUrl) {
+      const res = await api.get(nextUrl.replace('https://z12.7d8.mytemp.website/jrm_ecommerce_api/api/v1', ''));
+      if (res.data.results) {
+        allResults = [...allResults, ...res.data.results];
+        nextUrl = res.data.next;
+      } else {
+        break;
+      }
+    }
+  }
+  return allResults;
 };
 
 const productService = {
   // ✅ GET ALL PRODUCTS
   getProducts: async () => {
+    if (cachedProducts) return { data: cachedProducts };
     try {
-      let allResults = [];
-      let nextUrl = '/products/';
-
-      while (nextUrl) {
-        const res = await api.get(nextUrl.replace('https://z12.7d8.mytemp.website/jrm_ecommerce_api/api/v1', ''));
-        const data = res.data;
-
-        if (data.results) {
-          allResults = [...allResults, ...data.results];
-          nextUrl = data.next;
-        } else {
-          allResults = data;
-          break;
-        }
-      }
+      const allResults = await fetchAllPages('/products/');
 
       const products = allResults.map((p, index) => ({
         id: p.id,
@@ -54,9 +81,15 @@ const productService = {
         isNewArrival: p.is_new_arrival || p.isNewArrival || (index % 3 === 0 || index < 6),
         isBestSeller: p.is_best_seller || p.isBestSeller || ((p.rating?.rate ?? p.rating ?? 4) > 4.5 || index % 5 === 0),
         variants: p.variants || [],
-        images: p.images || []
+        images: [
+          API_IMAGE_OVERRIDES[p.id] || (p.images && p.images.length > 0 ? p.images[0].image : p.image),
+          'https://placehold.co/600x600/f3f4f6/4b5563.png?text=Angle+2',
+          'https://placehold.co/600x600/f3f4f6/4b5563.png?text=Angle+3',
+          'https://placehold.co/600x600/f3f4f6/4b5563.png?text=Angle+4'
+        ]
       }));
 
+      cachedProducts = products;
       return { data: products };
     } catch (error) {
       console.error('API Error:', error);
@@ -87,7 +120,12 @@ const productService = {
           isNewArrival: p.is_new_arrival || p.isNewArrival || false,
           isBestSeller: p.is_best_seller || p.isBestSeller || ((p.rating?.rate ?? p.rating ?? 4) > 4.5),
           variants: p.variants || [],
-          images: p.images || []
+          images: [
+            p.images && p.images.length > 0 ? p.images[0].image : p.image,
+            'https://placehold.co/600x600/f3f4f6/4b5563.png?text=Angle+2',
+            'https://placehold.co/600x600/f3f4f6/4b5563.png?text=Angle+3',
+            'https://placehold.co/600x600/f3f4f6/4b5563.png?text=Angle+4'
+          ]
         },
       };
     } catch (error) {
@@ -131,26 +169,9 @@ const productService = {
 
   // ✅ GET CATEGORIES
   getCategories: async () => {
+    if (cachedCategories) return { data: cachedCategories };
     try {
-      let allResults = [];
-      let nextUrl = '/products/categories/';
-      
-      while (nextUrl) {
-        // Just in case nextUrl is an absolute URL from the API, we need to handle it.
-        // If it starts with http, we just use it, otherwise we prepend if necessary.
-        // api.get will usually append base URL if it's a relative path.
-        const res = await api.get(nextUrl.replace('https://z12.7d8.mytemp.website/jrm_ecommerce_api/api/v1', ''));
-        const data = res.data;
-        
-        if (data.results) {
-          allResults = [...allResults, ...data.results];
-          nextUrl = data.next;
-        } else {
-          // If it's not paginated (just an array)
-          allResults = data;
-          break;
-        }
-      }
+      const allResults = await fetchAllPages('/products/categories/');
       
       const categories = allResults.map(c => {
         if (typeof c === 'object') {
@@ -163,8 +184,11 @@ const productService = {
         return { name: c, image: null, description: null };
       });
 
+      const finalCategories = [{ name: 'All', image: null }, ...categories];
+      cachedCategories = finalCategories;
+
       return {
-        data: [{ name: 'All', image: null }, ...categories],
+        data: finalCategories,
       };
     } catch (error) {
       console.error(error);

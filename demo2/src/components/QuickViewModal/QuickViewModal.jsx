@@ -11,6 +11,13 @@ const QuickViewModal = ({ product, onClose }) => {
   const navigate = useNavigate();
   const [quantity, setQuantity] = useState(1);
   const [selectedColor, setSelectedColor] = useState(product?.variants?.[0]?.name || '');
+  const [activeImage, setActiveImage] = useState(product?.images?.[0] || product?.image);
+
+  React.useEffect(() => {
+    if (product) {
+      setActiveImage(product.images?.[0] || product.image);
+    }
+  }, [product]);
 
   if (!product) return null;
 
@@ -39,25 +46,23 @@ const QuickViewModal = ({ product, onClose }) => {
           <div className="quickview-image-section">
             <div className="quickview-main-image">
               <img 
-                src={product.image} 
+                src={activeImage} 
                 alt={product.name} 
                 style={mainImageStyle}
               />
             </div>
             
-            {product.variants && product.variants.length > 0 && (
+            {product.images && product.images.length > 1 && (
               <div className="quickview-variants">
-                <h4 className="variant-label">Selected Color: <span>{selectedColor}</span></h4>
-                <div className="variant-thumbnails">
-                  {product.variants.map((variant, i) => (
+                <div className="variant-thumbnails" style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                  {product.images.map((img, i) => (
                     <button 
                       key={i} 
-                      className={`variant-thumb ${selectedColor === variant.name ? 'active' : ''} ${!variant.inStock ? 'out-of-stock' : ''}`}
-                      onClick={() => variant.inStock && setSelectedColor(variant.name)}
-                      disabled={!variant.inStock}
+                      className={`variant-thumb ${activeImage === img ? 'active' : ''}`}
+                      onClick={() => setActiveImage(img)}
+                      style={{ border: activeImage === img ? '2px solid #3b82f6' : '1px solid #e5e7eb', borderRadius: '4px', padding: '2px', cursor: 'pointer', background: 'transparent' }}
                     >
-                      <img src={product.image} alt={variant.name} style={{ filter: variant.filter }} />
-                      {!variant.inStock && <div className="out-of-stock-overlay">Out of stock</div>}
+                      <img src={img} alt={`Angle ${i + 1}`} style={{ width: '60px', height: '60px', objectFit: 'cover' }} />
                     </button>
                   ))}
                 </div>

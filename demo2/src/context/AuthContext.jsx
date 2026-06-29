@@ -16,7 +16,7 @@ export const AuthProvider = ({ children }) => {
         }
         
         const token = localStorage.getItem('shopease_token');
-        if (token) {
+        if (token && token !== "undefined" && token !== "null") {
           const profileRes = await authService.getProfile();
           if (profileRes?.data) {
             setUser(profileRes.data);
@@ -24,7 +24,13 @@ export const AuthProvider = ({ children }) => {
           }
         }
       } catch (err) {
-        console.error("Failed to initialize auth:", err);
+        if (err.response && (err.response.status === 401 || err.response.status === 403)) {
+          // Token is invalid or expired, silently clean up
+          localStorage.removeItem('shopease_user');
+          localStorage.removeItem('shopease_token');
+        } else {
+          console.error("Failed to initialize auth:", err);
+        }
       } finally {
         setLoading(false);
       }
@@ -36,6 +42,11 @@ export const AuthProvider = ({ children }) => {
   const login = (userData) => {
     setUser(userData);
     localStorage.setItem('shopease_user', JSON.stringify(userData));
+  };
+
+  const updateUser = (userData) => {
+    setUser((prev) => ({ ...prev, ...userData }));
+    localStorage.setItem('shopease_user', JSON.stringify({ ...user, ...userData }));
   };
 
   const logout = () => {
@@ -50,7 +61,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, register, loading }}>
+    <AuthContext.Provider value={{ user, login, logout, register, updateUser, loading }}>
       {children}
     </AuthContext.Provider>
   );

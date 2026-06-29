@@ -302,7 +302,24 @@
 
 @media (max-width: 1024px) {
   .checkout-layout {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 2rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .checkout-form-container, .checkout-summary {
+    padding: 1.5rem;
+  }
+  .form-row {
     grid-template-columns: 1fr;
+  }
+  .checkout-steps {
+    gap: 1rem;
+  }
+  .step {
+    font-size: 0.9rem;
   }
 }
 

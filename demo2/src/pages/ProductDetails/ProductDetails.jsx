@@ -96,7 +96,7 @@ const ProductDetails = () => {
   const displayStock = activeVariant ? activeVariant.stock : product.stock;
   const inStock = displayStock > 0;
   
-  const imagesList = product.images?.length > 0 ? product.images.map(img => img.image || img) : [product.image];
+  const imagesList = product.images?.length > 0 ? product.images.filter(Boolean).map(img => img.image || img) : [product.image].filter(Boolean);
 
   return (
     <div className="product-details-page container">
@@ -127,6 +127,28 @@ const ProductDetails = () => {
         <div className="info-section">
           <span className="details-category">{product.category}</span>
           <h1 className="details-name">{product.name}</h1>
+          
+          <div className="product-rating" style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '1rem' }}>
+            {[1, 2, 3, 4, 5].map((star) => (
+              <Star
+                key={star}
+                size={20}
+                onMouseEnter={() => setHoverRating(star)}
+                onMouseLeave={() => setHoverRating(0)}
+                onClick={() => handleRateProduct(star)}
+                style={{
+                  cursor: 'pointer',
+                  fill: star <= (hoverRating || userRating || Math.round(product.rating)) ? '#eab308' : 'none',
+                  color: star <= (hoverRating || userRating || Math.round(product.rating)) ? '#eab308' : '#cbd5e1',
+                  transition: 'color 0.2s, fill 0.2s'
+                }}
+              />
+            ))}
+            <span className="reviews-count" style={{ marginLeft: '8px', color: '#64748b', fontSize: '0.9rem' }}>
+              ({product.reviews} reviews)
+            </span>
+          </div>
+          {ratingMessage && <p className="rating-message" style={{ color: '#10b981', fontSize: '0.9rem', marginTop: '-0.5rem', marginBottom: '1rem' }}>{ratingMessage}</p>}
           
           <p className="details-price">₹{displayPrice.toFixed(2)}</p>
           <p className="details-desc">{product.description}</p>

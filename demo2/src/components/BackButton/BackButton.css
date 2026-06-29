@@ -1,0 +1,58 @@
+.back-button-container {
+  position: fixed;
+  top: var(--nav-height, 70px);
+  left: 0;
+  right: 0;
+  z-index: 990;
+  padding: 1rem 1.5rem;
+  max-width: 1280px;
+  margin: 0 auto;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-20px);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.back-button-container.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.global-back-btn {
+  pointer-events: auto; /* Re-enable clicks on the button itself */
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--card-bg);
+  color: var(--text-main);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  padding: 0.6rem 1.25rem;
+  border-radius: 50px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.global-back-btn:hover {
+  background: var(--primary);
+  color: var(--white);
+  border-color: var(--primary);
+  transform: translateX(-4px); /* Moves lightly left on hover instead of popping up */
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+@media (max-width: 768px) {
+  .back-button-container {
+    padding: 0.75rem 1rem;
+    top: auto; /* The navbar expands on mobile, so sticky top might need adjustment or just stay at top */
+  }
+  
+  .global-back-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+  }
+}

@@ -190,3 +190,60 @@
   border-color: #059669;
   color: white;
 }
+
+@media (max-width: 768px) {
+  /* Touch Optimization: Increase tap targets without changing design aesthetics */
+  .add-cart-btn, .buy-now-btn {
+    padding: 0.75rem 1rem;
+  }
+  
+  .action-btn {
+    width: 44px;
+    height: 44px;
+  }
+  
+  /* Ensure hover-only buttons are always partially visible or easily tappable on touch screens */
+  .product-actions {
+    right: 1rem; /* keep actions visible since there is no hover on mobile */
+    opacity: 0.9;
+  }
+}
+
+@media (max-width: 575px) {
+  /* When 2-columns on mobile, cards are small (~160px). Shrink paddings/fonts */
+  .product-info {
+    padding: 0.75rem;
+  }
+  
+  .product-name {
+    font-size: 0.85rem;
+    height: 2.1rem;
+    margin-bottom: 0.25rem;
+  }
+  
+  .price {
+    font-size: 1rem;
+  }
+  
+  .product-rating {
+    font-size: 0.75rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .card-buttons {
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  
+  .add-cart-btn, .buy-now-btn {
+    padding: 0.5rem;
+    font-size: 0.75rem;
+  }
+  
+  .badge-new, .badge-best {
+    padding: 0.15rem 0.5rem;
+    font-size: 0.65rem;
+    top: 0.5rem;
+    left: 0.5rem;
+  }
+}

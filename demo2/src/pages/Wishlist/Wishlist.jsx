@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Heart, Trash2, ShoppingCart } from 'lucide-react';
 import { useWishlist } from '../../context/WishlistContext';
 import { useCart } from '../../context/CartContext';
+import Loader from '../../components/Loader/Loader';
 import './Wishlist.css';
 
 const WishlistItem = ({ product, removeFromWishlist, addToCart }) => {
@@ -45,14 +46,16 @@ const WishlistItem = ({ product, removeFromWishlist, addToCart }) => {
 };
 
 const Wishlist = () => {
-  const { wishlist, removeFromWishlist } = useWishlist();
+  const { wishlist, removeFromWishlist, loading } = useWishlist();
   const { addToCart } = useCart();
+
+  if (loading) return <div className="wishlist-page container"><Loader /></div>;
 
   if (wishlist.length === 0) {
     return (
       <div className="wishlist-empty container">
         <Heart size={80} color="#e2e8f0" />
-        <h2>Your wishlist is empty</h2>
+        <h2 >Your wishlist is empty</h2>
         <p>Save items you like to buy them later.</p>
         <Link to="/products" className="btn btn-primary">Discover Products</Link>
       </div>
@@ -61,7 +64,7 @@ const Wishlist = () => {
 
   return (
     <div className="wishlist-page container">
-      <h1>My Wishlist</h1>
+      <h1 style={{marginTop:"20px"}}>My Wishlist</h1>
       
       <div className="wishlist-grid grid grid-4">
         {wishlist.map(product => (

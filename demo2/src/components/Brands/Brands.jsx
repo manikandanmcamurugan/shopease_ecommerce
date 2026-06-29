@@ -1,15 +1,10 @@
 import React from 'react';
 import './Brands.css';
-import heroBanner from '../../images/logo.jpg';
-import modern_headphone from '../../images/brand.jpg';
-import brand2 from '../../images/Logo Brand Puma Adidas Swoosh Free Download PNG HQ___.jpg';
-import brand3 from '../../images/logo adidas.jpg';
-
 const brands = [
-  heroBanner,
-  modern_headphone,
-  brand2,
-  brand3,
+  'https://placehold.co/200x100/f3f4f6/4b5563.png?text=Brand+1',
+  'https://placehold.co/200x100/f3f4f6/4b5563.png?text=Brand+2',
+  'https://placehold.co/200x100/f3f4f6/4b5563.png?text=Brand+3',
+  'https://placehold.co/200x100/f3f4f6/4b5563.png?text=Brand+4',
 ];
 
 const Brands = () => {
@@ -31,3 +26,4 @@ const Brands = () => {
 };
 
 export default Brands;
+
