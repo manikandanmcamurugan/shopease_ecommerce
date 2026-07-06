@@ -97,6 +97,51 @@ img {
   color: var(--white) !important;
 }
 
+/* --- Global Product Carousel Styles --- */
+.product-carousel-container {
+  position: relative;
+  width: 100%;
+}
+
+.product-carousel-track {
+  display: flex;
+  gap: 1.5rem;
+  overflow-x: auto;
+  padding-bottom: 1rem;
+  scroll-behavior: smooth;
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.product-carousel-track::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
+}
+
+.product-carousel-item {
+  flex: 0 0 calc(25% - 1.125rem); /* Default 4 items visible */
+  min-width: 250px;
+}
+
+@media (max-width: 968px) {
+  .product-carousel-item {
+    flex: 0 0 calc(33.333% - 1rem);
+  }
+}
+
+@media (max-width: 768px) {
+  .product-carousel-item {
+    flex: 0 0 calc(50% - 0.75rem);
+    min-width: 220px;
+  }
+}
+
+@media (max-width: 576px) {
+  .product-carousel-item {
+    flex: 0 0 75%;
+    min-width: 200px;
+  }
+}
+
 .btn-primary:hover {
   background-color: var(--primary-hover);
   transform: translateY(-2px);

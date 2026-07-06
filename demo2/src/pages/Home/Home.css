@@ -60,13 +60,15 @@
 }
 
 .newsletter-form .btn {
-  background-color: white;
-  color: var(--primary);
+  background-color: var(--primary-hover);
+  color: var(--white) !important;
+  border: 1px solid var(--white);
   white-space: nowrap;
 }
 
 .newsletter-form .btn:hover {
-  background-color: #f1f5f9;
+  background-color: var(--white);
+  color: var(--primary) !important;
   transform: scale(1.05);
 }
 

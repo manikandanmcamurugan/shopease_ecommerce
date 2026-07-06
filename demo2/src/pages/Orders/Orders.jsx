@@ -4,6 +4,7 @@ import { orderService } from '../../services/cartService';
 import productService from '../../services/productService';
 import Loader from '../../components/Loader/Loader';
 import { useAuth } from '../../context/AuthContext';
+import OrderActions from '../../components/OrderActions/OrderActions';
 import './Orders.css';
 
 const Orders = () => {
@@ -26,12 +27,9 @@ const Orders = () => {
           ? res.data
           : res.data?.results ?? [];
           
-        // Show orders for the logged-in user. If not logged in, show all orders for demo purposes.
-        let userOrders = rawData.filter(o => 
-          !user || 
-          (user?.id && o.user_id === user.id) || 
-          (user?.email && o.email === user.email)
-        );
+        // Trust the backend to return the correct orders for the user.
+        // If it returns them, we display them.
+        let userOrders = rawData;
         
         // Fetch detailed info (including items) for each order
         userOrders = await Promise.all(
@@ -40,21 +38,44 @@ const Orders = () => {
               const detailRes = await orderService.getOrder(order.id);
               const orderData = { ...order, ...detailRes.data };
               
-              if (Array.isArray(orderData.items)) {
-                orderData.items = orderData.items.map(item => {
+              // Normalize the items array
+              const orderItems = orderData.items || orderData.order_items || orderData.products || [];
+              
+              if (Array.isArray(orderItems) && orderItems.length > 0) {
+                orderData.items = await Promise.all(orderItems.map(async (item) => {
                   const prodId = typeof item.product === 'object' ? item.product?.id : (item.product ?? item.product_id);
-                  const matchedProduct = allProducts.find(p => p.id === prodId || String(p.id) === String(prodId));
+                  let matchedProduct = allProducts.find(p => p.id === prodId || String(p.id) === String(prodId));
+                  
+                  // If product not found in the initial batch, fetch it directly from the API
+                  if (!matchedProduct && prodId) {
+                    try {
+                      const prodRes = await productService.getProductById(prodId);
+                      if (prodRes && prodRes.data) {
+                        matchedProduct = prodRes.data;
+                      }
+                    } catch (e) {
+                      console.error(`Failed to fetch individual product ${prodId}`);
+                    }
+                  }
+
                   if (matchedProduct) {
-                    item.resolvedImage = matchedProduct.image;
-                    item.resolvedName = matchedProduct.name;
+                    item.resolvedImage = matchedProduct.image || matchedProduct.images?.[0];
+                    item.resolvedName = matchedProduct.name || matchedProduct.title;
+                  } else {
+                    // Fallback to the names provided in the order item if product wasn't found in master list
+                    item.resolvedImage = item.image || item.product_image;
+                    item.resolvedName = item.product_name || item.name;
                   }
                   return item;
-                });
+                }));
+              } else {
+                orderData.items = []; // Ensure it's always an array
               }
               return orderData;
             } catch (err) {
               console.error(`Failed to fetch details for order ${order.id}`, err);
-              return order;
+              // Ensure items is an array even on error
+              return { ...order, items: order.items || order.order_items || order.products || [] };
             }
           })
         );
@@ -181,11 +202,7 @@ const Orders = () => {
                           </p>
                           <button className="btn btn-primary buy-again">Buy it again</button>
                         </div>
-                        <div className="item-actions">
-                          <button className="btn btn-outline">Track package</button>
-                          <button className="btn btn-outline">Return items</button>
-                          <button className="btn btn-outline">Write a review</button>
-                        </div>
+                        <OrderActions orderId={order.id} item={item} />
                       </div>
                     ))
                   ) : (
@@ -200,11 +217,7 @@ const Orders = () => {
                         <p className="item-desc">See order details for items.</p>
                         <button className="btn btn-primary buy-again">Buy it again</button>
                       </div>
-                      <div className="item-actions">
-                        <button className="btn btn-outline">Track package</button>
-                        <button className="btn btn-outline">Return items</button>
-                        <button className="btn btn-outline">Write a review</button>
-                      </div>
+                      <OrderActions orderId={order.id} item={null} />
                     </div>
                   )}
                 </div>

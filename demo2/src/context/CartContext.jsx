@@ -1,6 +1,7 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { cartService } from '../services/cartService';
 import { useToast } from './ToastContext';
+import { useAuth } from './AuthContext';
 import { flyToIcon } from '../utils/animations';
 
 const CartContext = createContext();
@@ -10,14 +11,20 @@ export const CartProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { addToast } = useToast();
+  const { user } = useAuth();
 
   const fetchCart = async () => {
+    if (!user) {
+      setCartItems([]);
+      setLoading(false);
+      return;
+    }
     try {
-      const res = await cartService.getCart();
-      const data = res.data?.cart_items || res.data?.results || res.data || [];
-      let items = Array.isArray(data) ? data : [];
+      const userKey = user.id || user.email || user.username || 'guest';
+      const savedCart = localStorage.getItem(`shopease_cart_${userKey}`);
+      let items = savedCart ? JSON.parse(savedCart) : [];
 
-      // Fetch products to enrich the cart items with details (name, price, image)
+      // Fetch products to enrich the cart items with details
       try {
         const { default: productService } = await import('../services/productService');
         const prodRes = await productService.getProducts();
@@ -32,14 +39,11 @@ export const CartProvider = ({ children }) => {
               ...cartItem,
               product: {
                 ...productDetails,
-                ...(typeof cartItem.product === 'object' ? cartItem.product : {}) // Override with any specific cart details if present
+                ...(typeof cartItem.product === 'object' ? cartItem.product : {})
               }
             };
           }
-          return {
-            ...cartItem,
-            product: typeof cartItem.product === 'number' ? { id: cartItem.product } : cartItem.product
-          };
+          return cartItem;
         });
       } catch (prodErr) {
         console.error('Failed to enrich cart with product details:', prodErr);
@@ -47,70 +51,113 @@ export const CartProvider = ({ children }) => {
 
       setCartItems(items);
     } catch (error) {
-      console.error('Failed to fetch cart:', error);
-      setError(error.message || 'Failed to load cart');
+      console.error('Failed to fetch cart locally:', error);
+      setError('Failed to load cart');
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchCart();
-  }, []);
+    if (user) {
+      fetchCart();
+    } else {
+      setCartItems([]);
+      setLoading(false);
+    }
+  }, [user]);
+
+  const saveCartLocally = (userObj, items) => {
+    if (!userObj) return;
+    const userKey = userObj.id || userObj.email || userObj.username || 'guest';
+    const cartToSave = items.map(item => ({
+      id: item.id,
+      product_id: item.product_id ?? item.product?.id ?? item.id,
+      quantity: item.quantity || 1
+    }));
+    localStorage.setItem(`shopease_cart_${userKey}`, JSON.stringify(cartToSave));
+  };
 
   const addToCart = async (product, quantity = 1, event = null) => {
+    if (!user) {
+      window.dispatchEvent(new CustomEvent('triggerLoginPrompt'));
+      return;
+    }
     if (event) {
       flyToIcon(event, 'nav-cart-icon');
     }
-    try {
-      await cartService.addToCart(product.id, quantity);
-      await fetchCart();
-      addToast(`${product.name || 'Item'} added to Cart!`, 'success');
-    } catch (error) {
-      console.error('Failed to add to cart:', error);
-      addToast('Failed to add item to Cart', 'error');
-    }
+    
+    setCartItems(prev => {
+      let newItems;
+      const existing = prev.find(item => (item.product_id ?? item.product?.id ?? item.id) === product.id);
+      if (existing) {
+        newItems = prev.map(item => 
+          (item.product_id ?? item.product?.id ?? item.id) === product.id 
+            ? { ...item, quantity: (item.quantity || 1) + quantity } 
+            : item
+        );
+      } else {
+        newItems = [...prev, { id: Date.now(), product_id: product.id, product, quantity }];
+      }
+      saveCartLocally(user, newItems);
+      return newItems;
+    });
+    
+    addToast(`${product.name || 'Item'} added to Cart!`, 'success');
+    cartService.addToCart(product.id, quantity).catch(e => console.error("Backend tracking failed", e));
   };
 
   const removeFromCart = async (itemId) => {
-    try {
-      const cartItem = cartItems.find(
-        (i) => i.id === itemId || i.cart_item_id === itemId
-      );
-      
-      // The API endpoint expects product_id, not the cart row ID
-      const productId = cartItem?.product_id ?? cartItem?.product?.id ?? itemId;
-
-      await cartService.removeFromCart(productId);
-      await fetchCart();
-      addToast('Item removed from Cart', 'info');
-    } catch (error) {
-      console.error('Failed to remove from cart:', error);
-      addToast('Failed to remove item', 'error');
+    if (!user) {
+      window.dispatchEvent(new CustomEvent('triggerLoginPrompt'));
+      return;
     }
+    
+    const cartItem = cartItems.find(i => i.id === itemId || i.cart_item_id === itemId || (i.product_id ?? i.product?.id) === itemId);
+    const productId = cartItem?.product_id ?? cartItem?.product?.id ?? itemId;
+
+    setCartItems(prev => {
+      const newItems = prev.filter(i => 
+        i.id !== itemId && i.cart_item_id !== itemId && (i.product_id ?? i.product?.id) !== itemId
+      );
+      saveCartLocally(user, newItems);
+      return newItems;
+    });
+    
+    addToast('Item removed from Cart', 'info');
+    cartService.removeFromCart(productId).catch(e => console.error("Backend tracking failed", e));
   };
 
   const updateQuantity = async (itemId, quantity) => {
-    if (quantity < 1) return;
-    try {
-      const cartItem = cartItems.find(
-        (i) => i.id === itemId || i.cart_item_id === itemId
-      );
-      
-      // The API endpoint expects product_id, not the cart row ID
-      const productId = cartItem?.product_id ?? cartItem?.product?.id ?? itemId;
-
-      await cartService.updateCart(productId, quantity);
-      await fetchCart();
-      addToast('Cart updated', 'success');
-    } catch (error) {
-      console.error('Failed to update cart:', error);
-      addToast('Failed to update quantity', 'error');
+    if (!user) {
+      window.dispatchEvent(new CustomEvent('triggerLoginPrompt'));
+      return;
     }
+    if (quantity < 1) return;
+    
+    const cartItem = cartItems.find(i => i.id === itemId || i.cart_item_id === itemId || (i.product_id ?? i.product?.id) === itemId);
+    const productId = cartItem?.product_id ?? cartItem?.product?.id ?? itemId;
+
+    setCartItems(prev => {
+      const newItems = prev.map(i => {
+        if (i.id === itemId || i.cart_item_id === itemId || (i.product_id ?? i.product?.id) === itemId) {
+          return { ...i, quantity };
+        }
+        return i;
+      });
+      saveCartLocally(user, newItems);
+      return newItems;
+    });
+    
+    addToast('Cart updated', 'success');
+    cartService.updateCart(productId, quantity).catch(e => console.error("Backend tracking failed", e));
   };
 
   const clearCart = () => {
     setCartItems([]);
+    if (user) {
+      saveCartLocally(user, []);
+    }
   };
 
   const cartTotal = cartItems.reduce((total, item) => {

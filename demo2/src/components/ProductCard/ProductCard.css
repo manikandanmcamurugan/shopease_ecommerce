@@ -204,8 +204,7 @@
   
   /* Ensure hover-only buttons are always partially visible or easily tappable on touch screens */
   .product-actions {
-    right: 1rem; /* keep actions visible since there is no hover on mobile */
-    opacity: 0.9;
+    display: none;
   }
 }
 

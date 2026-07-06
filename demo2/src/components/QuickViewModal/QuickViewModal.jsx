@@ -10,8 +10,18 @@ const QuickViewModal = ({ product, onClose }) => {
   const { toggleWishlist, isInWishlist } = useWishlist();
   const navigate = useNavigate();
   const [quantity, setQuantity] = useState(1);
-  const [selectedColor, setSelectedColor] = useState(product?.variants?.[0]?.name || '');
+  const [selectedColor, setSelectedColor] = useState('');
+  const [selectedSize, setSelectedSize] = useState('');
   const [activeImage, setActiveImage] = useState(product?.images?.[0] || product?.image);
+
+  const variants = product?.variants || [];
+  const availableColors = Array.from(new Set(variants.filter(v => v.color).map(v => v.color)));
+  const availableSizes = Array.from(new Set(variants.filter(v => v.size).map(v => v.size)));
+
+  React.useEffect(() => {
+    if (availableColors.length > 0 && !selectedColor) setSelectedColor(availableColors[0]);
+    if (availableSizes.length > 0 && !selectedSize) setSelectedSize(availableSizes[0]);
+  }, [availableColors, availableSizes, selectedColor, selectedSize]);
 
   React.useEffect(() => {
     if (product) {
@@ -21,8 +31,13 @@ const QuickViewModal = ({ product, onClose }) => {
 
   if (!product) return null;
 
-  const activeVariantIndex = product?.variants?.findIndex(v => v.name === selectedColor) || 0;
-  const mainImageStyle = product?.variants?.[activeVariantIndex]?.filter ? { filter: product.variants[activeVariantIndex].filter } : {};
+  const activeVariant = variants.find(v => 
+    (availableColors.length === 0 || v.color === selectedColor) && 
+    (availableSizes.length === 0 || v.size === selectedSize)
+  );
+  
+  const displayPrice = activeVariant ? Number(product.price) + Number(activeVariant.additional_price || 0) : Number(product.price);
+  const mainImageStyle = activeVariant?.filter ? { filter: activeVariant.filter } : {};
 
   const handleBuyNow = () => {
     onClose();
@@ -76,9 +91,65 @@ const QuickViewModal = ({ product, onClose }) => {
             
             
             
-            <div className="product-price">₹{Number(product.price || 0).toFixed(2)}</div>
+            <div className="product-price">₹{Number(displayPrice || 0).toFixed(2)}</div>
             
             <p className="product-desc">{product.description || "Premium quality product tailored to your needs. Experience the best in class features and design."}</p>
+            
+            {(availableColors.length > 0 || availableSizes.length > 0) && (
+              <div className="quickview-variants-selectors" style={{ marginBottom: '1.5rem' }}>
+                {availableColors.length > 0 && (
+                  <div className="variant-group" style={{ marginBottom: '1rem' }}>
+                    <h4 style={{ fontSize: '0.9rem', marginBottom: '0.5rem' }}>Color: <span style={{ fontWeight: 'normal', color: 'var(--text-muted)' }}>{selectedColor}</span></h4>
+                    <div className="variant-options" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                      {availableColors.map(color => (
+                        <button 
+                          key={color} 
+                          className={`variant-btn color-btn ${selectedColor === color ? 'active' : ''}`}
+                          onClick={() => setSelectedColor(color)}
+                          style={{
+                            padding: '0.25rem 0.75rem',
+                            border: `1px solid ${selectedColor === color ? 'var(--primary-color)' : 'var(--border)'}`,
+                            background: selectedColor === color ? 'var(--primary-light)' : 'transparent',
+                            color: selectedColor === color ? 'var(--primary-color)' : 'var(--text-main)',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontSize: '0.85rem'
+                          }}
+                        >
+                          {color}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {availableSizes.length > 0 && (
+                  <div className="variant-group">
+                    <h4 style={{ fontSize: '0.9rem', marginBottom: '0.5rem' }}>Size: <span style={{ fontWeight: 'normal', color: 'var(--text-muted)' }}>{selectedSize}</span></h4>
+                    <div className="variant-options" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                      {availableSizes.map(size => (
+                        <button 
+                          key={size} 
+                          className={`variant-btn size-btn ${selectedSize === size ? 'active' : ''}`}
+                          onClick={() => setSelectedSize(size)}
+                          style={{
+                            padding: '0.25rem 0.75rem',
+                            border: `1px solid ${selectedSize === size ? 'var(--primary-color)' : 'var(--border)'}`,
+                            background: selectedSize === size ? 'var(--primary-light)' : 'transparent',
+                            color: selectedSize === size ? 'var(--primary-color)' : 'var(--text-main)',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontSize: '0.85rem'
+                          }}
+                        >
+                          {size}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
             
             <div className="quickview-actions">
               <div className="quantity-selector">
@@ -93,7 +164,7 @@ const QuickViewModal = ({ product, onClose }) => {
                     <ShoppingCart size={20} /> In Cart
                   </button>
                 ) : (
-                  <button className="btn btn-primary add-cart-btn" onClick={(e) => addToCart(product, quantity, e)}>
+                  <button className="btn btn-primary add-cart-btn" onClick={(e) => addToCart({...product, price: displayPrice, selectedVariant: activeVariant}, quantity, e)}>
                     <ShoppingCart size={20} /> Add to Cart
                   </button>
                 )}

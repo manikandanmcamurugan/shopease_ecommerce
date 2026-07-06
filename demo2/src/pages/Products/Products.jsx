@@ -13,16 +13,21 @@ const Products = () => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedBrands, setSelectedBrands] = useState([]);
+  const [showAllCategories, setShowAllCategories] = useState(false);
+  const [showAllBrands, setShowAllBrands] = useState(false);
   const [sortBy, setSortBy] = useState('default');
-  const [priceRange, setPriceRange] = useState(1000);
-  const [maxPrice, setMaxPrice] = useState(1000);
+  const [priceRange, setPriceRange] = useState('All');
+  const [showOffersOnly, setShowOffersOnly] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
 
   // Add state for mobile collapsible filters
   const [expandedFilters, setExpandedFilters] = useState({
     category: window.innerWidth > 968,
+    brand: window.innerWidth > 968,
     price: window.innerWidth > 968,
+    offers: window.innerWidth > 968,
     sort: window.innerWidth > 968
   });
 
@@ -30,7 +35,9 @@ const Products = () => {
     if (window.innerWidth <= 968) {
       setExpandedFilters(prev => ({
         category: filterName === 'category' ? !prev.category : false,
+        brand: filterName === 'brand' ? !prev.brand : false,
         price: filterName === 'price' ? !prev.price : false,
+        offers: filterName === 'offers' ? !prev.offers : false,
         sort: filterName === 'sort' ? !prev.sort : false
       }));
     } else {
@@ -56,10 +63,7 @@ const Products = () => {
         setCategories(catRes.data);
         
         if (fetchedProducts.length > 0) {
-          const highestPrice = Math.max(...fetchedProducts.map(p => p.price));
-          const safeMax = Math.ceil(highestPrice / 100) * 100; // Round up to nearest 100
-          setMaxPrice(safeMax);
-          setPriceRange(safeMax);
+          // Dynamic max price calculation removed as we now use fixed ranges
         }
         
         if (categoryParam) setSelectedCategory(categoryParam);
@@ -72,6 +76,12 @@ const Products = () => {
     fetchData();
   }, [categoryParam]);
 
+  // Effect 1: Removed dynamic Max Price calculation since we use fixed ranges in select
+  useEffect(() => {
+    // Kept empty to maintain hook order if needed, but not necessary.
+  }, [products, selectedCategory, selectedBrands, searchQuery]);
+
+  // Effect 2: Apply final Price Filter and Sorting
   useEffect(() => {
     let result = [...products];
 
@@ -85,8 +95,21 @@ const Products = () => {
       result = result.filter(p => p.category === selectedCategory);
     }
 
+    // Brand filter
+    if (selectedBrands.length > 0) {
+      result = result.filter(p => selectedBrands.includes(p.brand));
+    }
+
     // Price filter
-    result = result.filter(p => p.price <= priceRange);
+    if (priceRange !== 'All') {
+      const [min, max] = priceRange.split('-').map(Number);
+      result = result.filter(p => p.price >= min && p.price <= max);
+    }
+
+    // Offers filter
+    if (showOffersOnly) {
+      result = result.filter(p => p.hasOffer || p.discount > 0);
+    }
 
     // Sorting
     if (sortBy === 'price-low') result.sort((a, b) => a.price - b.price);
@@ -95,7 +118,11 @@ const Products = () => {
 
     setFilteredProducts(result);
     setCurrentPage(1);
-  }, [products, selectedCategory, sortBy, priceRange, searchQuery]);
+  }, [products, selectedCategory, selectedBrands, sortBy, priceRange, searchQuery, showOffersOnly]);
+
+  const uniqueBrands = [...new Set(products.map(p => p.brand).filter(Boolean))];
+  const visibleCategories = showAllCategories ? categories : categories.slice(0, 5);
+  const visibleBrands = showAllBrands ? uniqueBrands : uniqueBrands.slice(0, 5);
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -107,8 +134,24 @@ const Products = () => {
   return (
     <div className="products-page container">
       <header className="products-header">
-        <h1>{searchQuery ? `Search results for "${searchQuery}"` : selectedCategory + ' Products'}</h1>
-        <p>Found {filteredProducts.length} items</p>
+        <div>
+          <h1>{searchQuery ? `Search results for "${searchQuery}"` : selectedCategory + ' Products'}</h1>
+          <p>Found {filteredProducts.length} items</p>
+        </div>
+        
+        <div className="sort-container desktop-sort">
+          <label htmlFor="sort-select">Sort By:</label>
+          <select 
+            id="sort-select"
+            value={sortBy} 
+            onChange={(e) => setSortBy(e.target.value)}
+          >
+            <option value="default">Default</option>
+            <option value="price-low">Price: Low to High</option>
+            <option value="price-high">Price: High to Low</option>
+            <option value="rating">Top Rated</option>
+          </select>
+        </div>
       </header>
 
       <div className="products-layout">
@@ -123,7 +166,7 @@ const Products = () => {
             
             <div className={`filter-content ${expandedFilters.category ? 'expanded' : ''}`}>
               <ul className="category-list">
-                {categories.map(catObj => {
+                {visibleCategories.map(catObj => {
                   const catName = typeof catObj === 'object' ? catObj.name : catObj;
                   return (
                     <li key={catName}>
@@ -142,29 +185,108 @@ const Products = () => {
                   );
                 })}
               </ul>
+              {categories.length > 5 && (
+                <button 
+                  className="show-more-btn" 
+                  onClick={() => setShowAllCategories(!showAllCategories)}
+                  style={{ marginTop: '0.8rem', background: 'none', border: 'none', color: 'var(--primary-color)', cursor: 'pointer', fontWeight: '600', fontSize: '0.9rem', padding: '0' }}
+                >
+                  {showAllCategories ? 'Show Less' : 'Show More...'}
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div className="filter-group">
+            <h3 onClick={() => toggleFilter('brand')} className="filter-header">
+              <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Filter size={18} /> Brands
+              </span>
+              {expandedFilters.brand ? <ChevronUp size={18} className="filter-toggle-icon" /> : <ChevronDown size={18} className="filter-toggle-icon" />}
+            </h3>
+            
+            <div className={`filter-content ${expandedFilters.brand ? 'expanded' : ''}`}>
+              <ul className="category-list" style={{ padding: 0, listStyle: 'none' }}>
+                {visibleBrands.map(brand => (
+                  <li key={brand} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.6rem' }}>
+                    <input 
+                      type="checkbox"
+                      id={`brand-${brand}`}
+                      checked={selectedBrands.includes(brand)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedBrands(prev => [...prev, brand]);
+                        } else {
+                          setSelectedBrands(prev => prev.filter(b => b !== brand));
+                        }
+                      }}
+                      style={{ cursor: 'pointer', width: '16px', height: '16px', accentColor: 'var(--primary-color)' }}
+                    />
+                    <label htmlFor={`brand-${brand}`} style={{ cursor: 'pointer', margin: 0, fontSize: '0.95rem', userSelect: 'none' }}>
+                      {brand}
+                    </label>
+                  </li>
+                ))}
+              </ul>
+              {uniqueBrands.length > 5 && (
+                <button 
+                  className="show-more-btn" 
+                  onClick={() => setShowAllBrands(!showAllBrands)}
+                  style={{ marginTop: '0.8rem', background: 'none', border: 'none', color: 'var(--primary-color)', cursor: 'pointer', fontWeight: '600', fontSize: '0.9rem', padding: '0' }}
+                >
+                  {showAllBrands ? 'Show Less' : 'Show More...'}
+                </button>
+              )}
             </div>
           </div>
 
           <div className="filter-group">
             <h3 onClick={() => toggleFilter('price')} className="filter-header">
-              <span>Max Price: ₹{priceRange}</span>
+              <span>Price Range</span>
               {expandedFilters.price ? <ChevronUp size={18} className="filter-toggle-icon" /> : <ChevronDown size={18} className="filter-toggle-icon" />}
             </h3>
             
             <div className={`filter-content ${expandedFilters.price ? 'expanded' : ''}`}>
-              <input 
-                type="range" 
-                min="0" 
-                max={maxPrice} 
-                step="50" 
+              <select
                 value={priceRange}
-                onChange={(e) => setPriceRange(Number(e.target.value))}
-                className="price-slider"
-              />
+                onChange={(e) => setPriceRange(e.target.value)}
+                style={{ width: '100%', padding: '0.6rem', borderRadius: '4px', border: '1px solid var(--border)', fontFamily: 'inherit', fontSize: '0.95rem' }}
+              >
+                <option value="All">All Prices</option>
+                <option value="0-100">0 - 100</option>
+                <option value="100-500">100 - 500</option>
+                <option value="500-1000">500 - 1000</option>
+                <option value="1000-5000">1000 - 5000</option>
+                <option value="5000-10000">5000 - 10000</option>
+              </select>
             </div>
           </div>
 
           <div className="filter-group">
+            <h3 onClick={() => toggleFilter('offers')} className="filter-header">
+              <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Filter size={18} /> Offers & Discounts
+              </span>
+              {expandedFilters.offers ? <ChevronUp size={18} className="filter-toggle-icon" /> : <ChevronDown size={18} className="filter-toggle-icon" />}
+            </h3>
+            
+            <div className={`filter-content ${expandedFilters.offers ? 'expanded' : ''}`}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                <input 
+                  type="checkbox"
+                  id="offers-only"
+                  checked={showOffersOnly}
+                  onChange={(e) => setShowOffersOnly(e.target.checked)}
+                  style={{ cursor: 'pointer', width: '16px', height: '16px', accentColor: 'var(--primary-color)' }}
+                />
+                <label htmlFor="offers-only" style={{ cursor: 'pointer', margin: 0, fontSize: '0.95rem', userSelect: 'none' }}>
+                  Show only items with offers
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div className="filter-group mobile-sort-group">
             <h3 onClick={() => toggleFilter('sort')} className="filter-header">
               <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <SlidersHorizontal size={18} /> Sort By
@@ -174,50 +296,26 @@ const Products = () => {
             
             <div className={`filter-content ${expandedFilters.sort ? 'expanded' : ''}`}>
               <ul className="category-list">
-                <li>
-                  <button 
-                    className={sortBy === 'default' ? 'active' : ''}
-                    onClick={() => {
-                      setSortBy('default');
-                      if (window.innerWidth <= 968) setExpandedFilters(prev => ({ ...prev, sort: false }));
-                    }}
-                  >
-                    Default
-                  </button>
-                </li>
-                <li>
-                  <button 
-                    className={sortBy === 'price-low' ? 'active' : ''}
-                    onClick={() => {
-                      setSortBy('price-low');
-                      if (window.innerWidth <= 968) setExpandedFilters(prev => ({ ...prev, sort: false }));
-                    }}
-                  >
-                    Price: Low to High
-                  </button>
-                </li>
-                <li>
-                  <button 
-                    className={sortBy === 'price-high' ? 'active' : ''}
-                    onClick={() => {
-                      setSortBy('price-high');
-                      if (window.innerWidth <= 968) setExpandedFilters(prev => ({ ...prev, sort: false }));
-                    }}
-                  >
-                    Price: High to Low
-                  </button>
-                </li>
-                <li>
-                  <button 
-                    className={sortBy === 'rating' ? 'active' : ''}
-                    onClick={() => {
-                      setSortBy('rating');
-                      if (window.innerWidth <= 968) setExpandedFilters(prev => ({ ...prev, sort: false }));
-                    }}
-                  >
-                    Top Rated
-                  </button>
-                </li>
+                {[
+                  { value: 'default', label: 'Default' },
+                  { value: 'price-low', label: 'Price: Low to High' },
+                  { value: 'price-high', label: 'Price: High to Low' },
+                  { value: 'rating', label: 'Top Rated' }
+                ].map(opt => (
+                  <li key={opt.value}>
+                    <button 
+                      className={sortBy === opt.value ? 'active' : ''}
+                      onClick={() => {
+                        setSortBy(opt.value);
+                        if (window.innerWidth <= 968) {
+                          setExpandedFilters(prev => ({ ...prev, sort: false }));
+                        }
+                      }}
+                    >
+                      {opt.label}
+                    </button>
+                  </li>
+                ))}
               </ul>
             </div>
           </div>
@@ -235,7 +333,9 @@ const Products = () => {
               <h3>No products found matching your criteria.</h3>
               <button onClick={() => {
                 setSelectedCategory('All');
-                setPriceRange(1000);
+                setSelectedBrands([]);
+                setPriceRange('All');
+                setShowOffersOnly(false);
                 setSortBy('default');
               }} className="btn btn-primary">Reset Filters</button>
             </div>

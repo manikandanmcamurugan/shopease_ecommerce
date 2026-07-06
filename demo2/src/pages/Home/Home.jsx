@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Banner from '../../components/Banner/Banner';
 import CategoryCard from '../../components/CategoryCard/CategoryCard';
 import ProductCard from '../../components/ProductCard/ProductCard';
@@ -12,8 +13,21 @@ const Home = () => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Carousel refs and states
+  // Categories Carousel refs and states
   const scrollRef = useRef(null);
+  
+  // Product Carousels refs
+  const featuredRef = useRef(null);
+  const newArrivalsRef = useRef(null);
+  const bestSellersRef = useRef(null);
+
+  const scrollProductCarousel = (ref, direction) => {
+    if (ref.current) {
+      const scrollAmount = direction === 'left' ? -300 : 300;
+      ref.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
+  };
+
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
@@ -163,60 +177,84 @@ const Home = () => {
       {/* Featured Products */}
       <section className="bg-alt">
         <div className="section container">
-          <div className="section-header">
-            <h2>Featured Products</h2>
-            <p>Our handpicked selections for you</p>
+          <div className="section-header-centered" style={{ position: 'relative', textAlign: 'center', marginBottom: '2rem', paddingBottom: '10px' }}>
+            <h2 style={{ marginBottom: '0.5rem' }}>Featured Products</h2>
+            <p style={{ margin: 0, color: 'var(--text-muted)' }}>Our handpicked selections for you</p>
+            <div className="carousel-nav-arrows d-none d-md-flex" style={{ display: 'flex', gap: '0.5rem', position: 'absolute', right: 0, bottom: '10px' }}>
+              <button onClick={() => scrollProductCarousel(featuredRef, 'left')} style={{ width: '40px', height: '40px', borderRadius: '50%', border: '1px solid var(--border)', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                <ChevronLeft size={20} />
+              </button>
+              <button onClick={() => scrollProductCarousel(featuredRef, 'right')} style={{ width: '40px', height: '40px', borderRadius: '50%', border: '1px solid var(--border)', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                <ChevronRight size={20} />
+              </button>
+            </div>
           </div>
-          <div className="grid grid-4">
-            {products.filter(p => p.isFeatured).slice(0, 8).map(product => (
-              <ProductCard key={product.id} product={product} />
-            ))}
+          <div className="product-carousel-container">
+            <div className="product-carousel-track" ref={featuredRef}>
+              {products.filter(p => p.isFeatured).slice(0, 8).map(product => (
+                <div key={product.id} className="product-carousel-item">
+                  <ProductCard product={product} />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
       {/* New Arrivals */}
       <section className="section container">
-        <div className="section-header">
-          <h2>New Arrivals</h2>
-          <p>Fresh drops just for you</p>
+        <div className="section-header-centered" style={{ position: 'relative', textAlign: 'center', marginBottom: '2rem', paddingBottom: '10px' }}>
+          <h2 style={{ marginBottom: '0.5rem' }}>New Arrivals</h2>
+          <p style={{ margin: 0, color: 'var(--text-muted)' }}>Fresh drops just for you</p>
+          <div className="carousel-nav-arrows d-none d-md-flex" style={{ display: 'flex', gap: '0.5rem', position: 'absolute', right: 0, bottom: '10px' }}>
+            <button onClick={() => scrollProductCarousel(newArrivalsRef, 'left')} style={{ width: '40px', height: '40px', borderRadius: '50%', border: '1px solid var(--border)', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+              <ChevronLeft size={20} />
+            </button>
+            <button onClick={() => scrollProductCarousel(newArrivalsRef, 'right')} style={{ width: '40px', height: '40px', borderRadius: '50%', border: '1px solid var(--border)', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+              <ChevronRight size={20} />
+            </button>
+          </div>
         </div>
-        <div className="grid grid-4">
-          {products.filter(p => p.isNewArrival).slice(0, 8).map(product => (
-            <ProductCard key={product.id} product={product} />
-          ))}
+        <div className="product-carousel-container">
+          <div className="product-carousel-track" ref={newArrivalsRef}>
+            {products.filter(p => p.isNewArrival).slice(0, 8).map(product => (
+              <div key={product.id} className="product-carousel-item">
+                <ProductCard product={product} />
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* Best Sellers */}
       <section className="bg-alt">
         <div className="section container">
-          <div className="section-header">
-            <h2>Best Sellers</h2>
-            <p>Most loved by our community</p>
+          <div className="section-header-centered" style={{ position: 'relative', textAlign: 'center', marginBottom: '2rem', paddingBottom: '10px' }}>
+            <h2 style={{ marginBottom: '0.5rem' }}>Best Sellers</h2>
+            <p style={{ margin: 0, color: 'var(--text-muted)' }}>Most loved by our community</p>
+            <div className="carousel-nav-arrows d-none d-md-flex" style={{ display: 'flex', gap: '0.5rem', position: 'absolute', right: 0, bottom: '10px' }}>
+              <button onClick={() => scrollProductCarousel(bestSellersRef, 'left')} style={{ width: '40px', height: '40px', borderRadius: '50%', border: '1px solid var(--border)', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                <ChevronLeft size={20} />
+              </button>
+              <button onClick={() => scrollProductCarousel(bestSellersRef, 'right')} style={{ width: '40px', height: '40px', borderRadius: '50%', border: '1px solid var(--border)', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                <ChevronRight size={20} />
+              </button>
+            </div>
           </div>
-          <div className="grid grid-4">
-            {products.filter(p => p.isBestSeller).slice(0, 8).map(product => (
-              <ProductCard key={product.id} product={product} />
-            ))}
+          <div className="product-carousel-container">
+            <div className="product-carousel-track" ref={bestSellersRef}>
+              {products.filter(p => p.isBestSeller).slice(0, 8).map(product => (
+                <div key={product.id} className="product-carousel-item">
+                  <ProductCard product={product} />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Brands Section */}
       <Brands />
 
-      {/* Newsletter */}
-      <section className="newsletter-section">
-        <div className="container newsletter-box" style={{ padding:'60px' }}>
-          <h2>Join Our Newsletter</h2>
-          <p>Subscribe to get special offers, free giveaways, and once-in-a-lifetime deals.</p>
-          <form className="newsletter-form">
-            <input type="email" placeholder="Your email address" required />
-            <button type="submit" className="btn btn-primary">Subscribe</button>
-          </form>
-        </div>
-      </section>
     </div>
   );
 };

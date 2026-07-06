@@ -115,3 +115,34 @@
 .toggle-mode-btn:hover {
   text-decoration: underline;
 }
+
+/* Validation styles */
+.valid-input {
+  border-color: #10b981 !important; /* green */
+}
+
+.invalid-input {
+  border-color: #ad2f2fd6 !important; /* red */
+}
+
+.field-error {
+  color: #ad2f2fd6;
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+  display: block;
+}
+
+.password-strength {
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+  font-weight: 500;
+  display: block;
+}
+
+.password-strength.weak {
+  color: #ef4444;
+}
+
+.password-strength.strong {
+  color: #10b981;
+}

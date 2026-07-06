@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { LogIn, Mail, Lock, Eye, EyeOff, User, Phone, UserPlus, Key, ArrowRight, CheckCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import authService from '../../services/authService';
@@ -7,32 +7,98 @@ import './Login.css';
 
 const Login = () => {
   const [authMode, setAuthMode] = useState('login'); // 'login', 'register', 'forgot', 'otp', 'reset'
-  
+
   const [formData, setFormData] = useState({
     username: '',
     email: '',
     phone_number: '',
     password: ''
   });
-  
+
   const [resetData, setResetData] = useState({
     identifier: '',
     otp: '',
     newPassword: '',
     confirmPassword: ''
   });
-  
+
+  const [formErrors, setFormErrors] = useState({});
+  const [touched, setTouched] = useState({});
+
+  const validateField = (name, value, mode = authMode) => {
+    let error = '';
+    if (name === 'username' && mode === 'register') {
+      if (!value.trim()) error = 'Username is required';
+    }
+    if (name === 'email') {
+      if (!value) error = 'Email is required';
+      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) error = 'Invalid email format';
+    }
+    if (name === 'phone_number' && mode === 'register') {
+      if (!value) error = 'Phone number is required';
+      else if (!/^\d{10}$/.test(value)) error = 'Phone number must be exactly 10 digits';
+    }
+    if (name === 'password') {
+      if (!value) error = 'Password is required';
+      else if (mode === 'register') {
+        const strongRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).{8,}$/;
+        if (!strongRegex.test(value)) {
+          error = 'Weak Password';
+        }
+      }
+    }
+    return error;
+  };
+
+  const getInputClass = (name) => {
+    if (!touched[name]) return 'form-control';
+    return `form-control ${formErrors[name] ? 'invalid-input' : 'valid-input'}`;
+  };
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
-  
+
   const { login: updateAuthContext } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  React.useEffect(() => {
+    if (location.state?.mode) {
+      setAuthMode(location.state.mode);
+      setError('');
+      setSuccessMsg('');
+    } else if (!location.state) {
+      setAuthMode('login');
+      setError('');
+      setSuccessMsg('');
+      setFormErrors({});
+      setTouched({});
+    }
+  }, [location.state, location.pathname]);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    let newValue = value;
+    
+    if (name === 'phone_number') {
+      newValue = value.replace(/\D/g, '');
+      if (newValue.length > 10) return;
+    }
+    
+    setFormData(prev => ({ ...prev, [name]: newValue }));
+    
+    const error = validateField(name, newValue);
+    setFormErrors(prev => ({ ...prev, [name]: error }));
+  };
+
+  const handleBlur = (e) => {
+    const { name, value } = e.target;
+    setTouched(prev => ({ ...prev, [name]: true }));
+    const error = validateField(name, value);
+    setFormErrors(prev => ({ ...prev, [name]: error }));
   };
 
   const handleResetChange = (e) => {
@@ -41,15 +107,36 @@ const Login = () => {
 
   const handleLoginRegister = async (e) => {
     e.preventDefault();
+    
+    const newErrors = {};
+    const fieldsToValidate = authMode === 'register' 
+      ? ['username', 'email', 'phone_number', 'password']
+      : ['email', 'password'];
+      
+    let hasErrors = false;
+    fieldsToValidate.forEach(field => {
+      const error = validateField(field, formData[field]);
+      if (error) {
+        newErrors[field] = error;
+        hasErrors = true;
+      }
+    });
+    
+    setFormErrors(newErrors);
+    const newTouched = fieldsToValidate.reduce((acc, field) => ({...acc, [field]: true}), {});
+    setTouched(newTouched);
+    
+    if (hasErrors) return;
+
     setLoading(true);
     setError('');
-    
+
     try {
       if (authMode === 'login') {
         const res = await authService.login(formData.email, formData.password);
         const token = res?.data?.access || res?.data?.token || res?.token;
         if (token) localStorage.setItem('shopease_token', token);
-        
+
         let user = res?.data?.user;
         if (!user && token) {
           try {
@@ -59,7 +146,7 @@ const Login = () => {
             console.error('Failed to fetch profile:', profileErr);
           }
         }
-        
+
         if (!user || (!user.name && !user.username && !user.email)) {
           user = {
             ...user,
@@ -68,44 +155,47 @@ const Login = () => {
             name: formData.email.split('@')[0]
           };
         }
-        
+
         updateAuthContext(user);
         navigate('/profile');
       } else {
-        const res = await authService.register({ 
-          username: formData.username, 
+        await authService.register({
+          username: formData.username,
           email: formData.email,
           phone_number: formData.phone_number,
-          password: formData.password 
+          password: formData.password
         });
-        const token = res?.data?.access || res?.data?.token || res?.token || 'mock-jwt-token';
-        if (token) localStorage.setItem('shopease_token', token);
         
-        let user = res?.data?.user;
-        if (!user && token && token !== 'mock-jwt-token') {
-          try {
-            const profileRes = await authService.getProfile();
-            user = profileRes.data;
-          } catch (profileErr) {
-            console.error('Failed to fetch profile:', profileErr);
-          }
-        }
-        
-        if (!user || (!user.name && !user.username && !user.email)) {
-          user = {
-            ...user,
-            email: formData.email,
-            username: formData.username || formData.email.split('@')[0],
-            name: formData.username || formData.email.split('@')[0],
-            phone: formData.phone_number
-          };
-        }
-        
-        updateAuthContext(user);
-        navigate('/profile');
+        setSuccessMsg('User registered successfully! Please login.');
+        setAuthMode('login');
+        setFormData({ ...formData, password: '' }); // keep the email but clear password
       }
     } catch (err) {
-      setError(authMode === 'login' ? 'Invalid email or password. Please try again.' : 'Registration failed. Please try again.');
+      if (err.response?.data) {
+        // Surface the backend's actual field-level validation errors instead of
+        // collapsing them into a generic message. This is what a 400 response
+        // from DRF-style APIs (e.g. { "phone_number": ["..."] }) looks like.
+        const data = err.response.data;
+        console.error('Full backend error payload:', data);
+
+        let errorMsg;
+        if (data.message) {
+          errorMsg = data.message;
+        } else if (data.error) {
+          errorMsg = data.error;
+        } else if (data.detail) {
+          errorMsg = data.detail;
+        } else if (typeof data === 'object') {
+          errorMsg = Object.entries(data)
+            .map(([field, msgs]) => `${field}: ${Array.isArray(msgs) ? msgs.join(' ') : msgs}`)
+            .join(' | ');
+        } else {
+          errorMsg = 'Registration failed.';
+        }
+        setError(errorMsg);
+      } else {
+        setError(authMode === 'login' ? 'Invalid email or password. Please try again.' : 'Registration failed. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -168,6 +258,8 @@ const Login = () => {
     setAuthMode(mode);
     setError('');
     setSuccessMsg('');
+    setFormErrors({});
+    setTouched({});
     if (mode === 'login' || mode === 'register') {
       setFormData({ username: '', email: '', phone_number: '', password: '' });
     }
@@ -198,22 +290,24 @@ const Login = () => {
         {successMsg && <div className="auth-success" style={{ color: '#10b981', backgroundColor: '#ecfdf5', padding: '10px', borderRadius: '8px', marginBottom: '15px', fontSize: '0.9rem', border: '1px solid #34d399' }}>{successMsg}</div>}
 
         {(authMode === 'login' || authMode === 'register') && (
-          <form className="auth-form" onSubmit={handleLoginRegister}>
+          <form className="auth-form" onSubmit={handleLoginRegister} noValidate>
             {authMode === 'register' && (
               <div className="form-group">
                 <label className="form-label">User Name</label>
                 <div className="input-with-icon">
                   <User size={18} />
-                  <input 
+                  <input
                     name="username"
-                    type="text" 
-                    className="form-control" 
+                    type="text"
+                    className={getInputClass('username')}
                     placeholder="johndoe"
                     value={formData.username}
                     onChange={handleChange}
-                    required={authMode === 'register'} 
+                    onBlur={handleBlur}
+                    required={authMode === 'register'}
                   />
                 </div>
+                {formErrors.username && touched.username && <span className="field-error">{formErrors.username}</span>}
               </div>
             )}
 
@@ -221,16 +315,18 @@ const Login = () => {
               <label className="form-label">Email Address</label>
               <div className="input-with-icon">
                 <Mail size={18} />
-                <input 
+                <input
                   name="email"
-                  type="email" 
-                  className="form-control" 
+                  type="email"
+                  className={getInputClass('email')}
                   placeholder="email@example.com"
                   value={formData.email}
                   onChange={handleChange}
-                  required 
+                  onBlur={handleBlur}
+                  required
                 />
               </div>
+              {formErrors.email && touched.email && <span className="field-error">{formErrors.email}</span>}
             </div>
 
             {authMode === 'register' && (
@@ -238,16 +334,18 @@ const Login = () => {
                 <label className="form-label">Phone Number</label>
                 <div className="input-with-icon">
                   <Phone size={18} />
-                  <input 
+                  <input
                     name="phone_number"
-                    type="tel" 
-                    className="form-control" 
+                    type="tel"
+                    className={getInputClass('phone_number')}
                     placeholder="1234567890"
                     value={formData.phone_number}
                     onChange={handleChange}
-                    required={authMode === 'register'} 
+                    onBlur={handleBlur}
+                    required={authMode === 'register'}
                   />
                 </div>
+                {formErrors.phone_number && touched.phone_number && <span className="field-error">{formErrors.phone_number}</span>}
               </div>
             )}
 
@@ -262,46 +360,54 @@ const Login = () => {
               </div>
               <div className="input-with-icon">
                 <Lock size={18} />
-                <input 
+                <input
                   name="password"
-                  type={showPassword ? 'text' : 'password'} 
-                  className="form-control" 
+                  type={showPassword ? 'text' : 'password'}
+                  className={getInputClass('password')}
                   placeholder="••••••••"
                   value={formData.password}
                   onChange={handleChange}
-                  required 
+                  onBlur={handleBlur}
+                  required
                 />
-                <button 
-                  type="button" 
-                  className="password-toggle"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
+               
               </div>
+              {formErrors.password && touched.password && authMode !== 'register' && <span className="field-error">{formErrors.password}</span>}
+              {authMode === 'register' && (
+                <div style={{ marginTop: '0.5rem' }}>
+                  {formData.password && (
+                    <span className={`password-strength ${formErrors.password ? 'weak' : 'strong'}`} style={{ display: 'block', marginBottom: '0.25rem' }}>
+                      {formErrors.password
+                        ? '❌ Weak Password – Missing uppercase letter, number, or special character.' 
+                        : '✅ Strong Password '}
+                    </span>
+                  )}
+                  
+                </div>
+              )}
             </div>
 
             <button type="submit" className="btn btn-primary auth-submit" disabled={loading}>
-              {loading ? (authMode === 'login' ? 'Logging in...' : 'Creating Account...') : (authMode === 'login' ? 'Login' : 'Register')} 
+              {loading ? (authMode === 'login' ? 'Logging in...' : 'Creating Account...') : (authMode === 'login' ? 'Login' : 'Register')}
               {authMode === 'login' ? <LogIn size={20} /> : <UserPlus size={20} />}
             </button>
           </form>
         )}
 
         {authMode === 'forgot' && (
-          <form className="auth-form" onSubmit={handleForgotPassword}>
+          <form className="auth-form" onSubmit={handleForgotPassword} noValidate>
             <div className="form-group">
               <label className="form-label">Email or Phone Number</label>
               <div className="input-with-icon">
                 <User size={18} />
-                <input 
+                <input
                   name="identifier"
-                  type="text" 
-                  className="form-control" 
+                  type="text"
+                  className="form-control"
                   placeholder="Enter your email or phone"
                   value={resetData.identifier}
                   onChange={handleResetChange}
-                  required 
+                  required
                 />
               </div>
             </div>
@@ -312,19 +418,19 @@ const Login = () => {
         )}
 
         {authMode === 'otp' && (
-          <form className="auth-form" onSubmit={handleVerifyOTP}>
+          <form className="auth-form" onSubmit={handleVerifyOTP} noValidate>
             <div className="form-group">
               <label className="form-label">Enter OTP</label>
               <div className="input-with-icon">
                 <Key size={18} />
-                <input 
+                <input
                   name="otp"
-                  type="text" 
-                  className="form-control" 
+                  type="text"
+                  className="form-control"
                   placeholder="e.g. 123456"
                   value={resetData.otp}
                   onChange={handleResetChange}
-                  required 
+                  required
                 />
               </div>
             </div>
@@ -335,22 +441,22 @@ const Login = () => {
         )}
 
         {authMode === 'reset' && (
-          <form className="auth-form" onSubmit={handleResetPassword}>
+          <form className="auth-form" onSubmit={handleResetPassword} noValidate>
             <div className="form-group">
               <label className="form-label">New Password</label>
               <div className="input-with-icon">
                 <Lock size={18} />
-                <input 
+                <input
                   name="newPassword"
-                  type={showPassword ? 'text' : 'password'} 
-                  className="form-control" 
+                  type={showPassword ? 'text' : 'password'}
+                  className="form-control"
                   placeholder="Enter new password"
                   value={resetData.newPassword}
                   onChange={handleResetChange}
-                  required 
+                  required
                 />
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   className="password-toggle"
                   onClick={() => setShowPassword(!showPassword)}
                 >
@@ -362,17 +468,17 @@ const Login = () => {
               <label className="form-label">Confirm New Password</label>
               <div className="input-with-icon">
                 <Lock size={18} />
-                <input 
+                <input
                   name="confirmPassword"
-                  type={showConfirmPassword ? 'text' : 'password'} 
-                  className="form-control" 
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  className="form-control"
                   placeholder="Confirm new password"
                   value={resetData.confirmPassword}
                   onChange={handleResetChange}
-                  required 
+                  required
                 />
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   className="password-toggle"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 >

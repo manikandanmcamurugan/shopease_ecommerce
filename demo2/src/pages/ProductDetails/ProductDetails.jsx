@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Star, ShoppingCart, Heart, ShieldCheck, Truck, RotateCcw } from 'lucide-react';
+import { Star, ShoppingCart, Heart, ShieldCheck, Truck, RotateCcw, Send, ChevronLeft, ChevronRight } from 'lucide-react';
 import productService from '../../services/productService';
 import { useCart } from '../../context/CartContext';
 import { useWishlist } from '../../context/WishlistContext';
@@ -13,6 +13,7 @@ const ProductDetails = () => {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
   const [relatedProducts, setRelatedProducts] = useState([]);
+  const [recommendedProducts, setRecommendedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const { addToCart, isInCart } = useCart();
@@ -22,12 +23,45 @@ const ProductDetails = () => {
   const [selectedColor, setSelectedColor] = useState('');
   const [selectedSize, setSelectedSize] = useState('');
   const navigate = useNavigate();
+  const carouselRef = useRef(null);
+  const recommendedCarouselRef = useRef(null);
+
+  const scrollCarousel = (direction) => {
+    if (carouselRef.current) {
+      const scrollAmount = direction === 'left' ? -300 : 300;
+      carouselRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
+  };
+
+  const scrollRecommendedCarousel = (direction) => {
+    if (recommendedCarouselRef.current) {
+      const scrollAmount = direction === 'left' ? -300 : 300;
+      recommendedCarouselRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
+  };
 
   // Rating State
   const [userRating, setUserRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [isSubmittingRating, setIsSubmittingRating] = useState(false);
   const [ratingMessage, setRatingMessage] = useState('');
+
+  const handleShare = async () => {
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: product?.name || 'Product',
+          text: `Check out ${product?.name} on our store!`,
+          url: window.location.href,
+        });
+      } else {
+        await navigator.clipboard.writeText(window.location.href);
+        alert('Product link copied to clipboard!');
+      }
+    } catch (error) {
+      console.log('Error sharing:', error);
+    }
+  };
 
   const handleBuyNow = () => {
     // Bypass the cart and checkout this specific item directly
@@ -69,7 +103,11 @@ const ProductDetails = () => {
         if (sizes.length > 0) setSelectedSize(sizes[0]);
         
         const allProdRes = await productService.getProducts();
-        setRelatedProducts(allProdRes.data.filter(p => p.category === res.data.category && p.id !== res.data.id).slice(0, 4));
+        const related = allProdRes.data.filter(p => p.category === res.data.category && p.id !== res.data.id).slice(0, 8);
+        setRelatedProducts(related);
+        
+        const recommended = allProdRes.data.filter(p => p.id !== res.data.id && !related.some(r => r.id === p.id)).sort((a,b) => b.rating - a.rating).slice(0, 8);
+        setRecommendedProducts(recommended);
       } catch (error) {
         console.error(error);
       } finally {
@@ -108,6 +146,27 @@ const ProductDetails = () => {
         <div className="image-section">
           <div className="main-image-container">
             <img src={activeImage || imagesList[0]} alt={product.name} className="main-image" />
+            <div className="image-actions">
+              <button 
+                className={`image-action-btn ${isInWishlist(product.id) ? 'active' : ''}`}
+                onClick={(e) => toggleWishlist(product, e)}
+                title="Add to Wishlist"
+              >
+                <Heart 
+                  size={22}
+                  stroke={isInWishlist(product.id) ? '#ef4444' : 'currentColor'}
+                  fill={isInWishlist(product.id) ? '#ef4444' : 'none'} 
+                  strokeWidth={2}
+                />
+              </button>
+              <button 
+                className="image-action-btn"
+                onClick={handleShare}
+                title="Share Product"
+              >
+                <Send size={22} strokeWidth={2} />
+              </button>
+            </div>
           </div>
           {imagesList.length > 1 && (
             <div className="thumbnail-gallery">
@@ -215,22 +274,6 @@ const ProductDetails = () => {
             <button className="btn btn-secondary buy-now-btn-detail" onClick={handleBuyNow} disabled={!inStock}>
               Buy Now
             </button>
-            
-            <button 
-              className={`btn btn-outline wishlist-btn ${isInWishlist(product.id) ? 'active' : ''}`}
-              onClick={(e) => toggleWishlist(product, e)}
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '48px', height: '48px', padding: 0 }}
-            >
-              <Heart 
-                style={{ 
-                  width: '24px', 
-                  height: '24px', 
-                  stroke: isInWishlist(product.id) ? '#ef4444' : '#64748b',
-                  fill: isInWishlist(product.id) ? '#ef4444' : 'none',
-                  strokeWidth: 2
-                }}
-              />
-            </button>
           </div>
 
           <div className="features-grid">
@@ -261,11 +304,62 @@ const ProductDetails = () => {
 
       {relatedProducts.length > 0 && (
         <section className="related-section">
-          <h2>Related Products</h2>
-          <div className="grid grid-4">
-            {relatedProducts.map(p => (
-              <ProductCard key={p.id} product={p} />
-            ))}
+          <div className="section-header-inline" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+            <h2 style={{ marginBottom: 0 }}>Related Products</h2>
+            <div className="carousel-nav-arrows" style={{ display: 'flex', gap: '0.5rem' }}>
+              <button 
+                onClick={() => scrollCarousel('left')} 
+                style={{ width: '40px', height: '40px', borderRadius: '50%', border: '1px solid var(--border)', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+              >
+                <ChevronLeft size={20} />
+              </button>
+              <button 
+                onClick={() => scrollCarousel('right')}
+                style={{ width: '40px', height: '40px', borderRadius: '50%', border: '1px solid var(--border)', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+              >
+                <ChevronRight size={20} />
+              </button>
+            </div>
+          </div>
+          <div className="product-carousel-container">
+            <div className="product-carousel-track" ref={carouselRef}>
+              {relatedProducts.map(p => (
+                <div key={p.id} className="product-carousel-item">
+                  <ProductCard product={p} />
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {recommendedProducts.length > 0 && (
+        <section className="related-section" style={{ paddingTop: '2rem', borderTop: 'none' }}>
+          <div className="section-header-inline" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+            <h2 style={{ marginBottom: 0 }}>You May Also Like</h2>
+            <div className="carousel-nav-arrows" style={{ display: 'flex', gap: '0.5rem' }}>
+              <button 
+                onClick={() => scrollRecommendedCarousel('left')} 
+                style={{ width: '40px', height: '40px', borderRadius: '50%', border: '1px solid var(--border)', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+              >
+                <ChevronLeft size={20} />
+              </button>
+              <button 
+                onClick={() => scrollRecommendedCarousel('right')}
+                style={{ width: '40px', height: '40px', borderRadius: '50%', border: '1px solid var(--border)', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+              >
+                <ChevronRight size={20} />
+              </button>
+            </div>
+          </div>
+          <div className="product-carousel-container">
+            <div className="product-carousel-track" ref={recommendedCarouselRef}>
+              {recommendedProducts.map(p => (
+                <div key={p.id} className="product-carousel-item">
+                  <ProductCard product={p} />
+                </div>
+              ))}
+            </div>
           </div>
         </section>
       )}

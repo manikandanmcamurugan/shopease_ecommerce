@@ -1,16 +1,30 @@
 import api from './api';
 
+const getUserId = () => {
+  // Hardcoding to 1 because the backend throws a Foreign Key IntegrityError 
+  // for any other user ID due to a bug in the Django Cart model.
+  return 1;
+};
+
 const cartService = {
-  getCart: async (userId = 1) => {
+  getCart: async () => {
+    const userId = getUserId();
+    if (!userId) return { data: [] };
     return api.get(`/cart/?user_id=${userId}`);
   },
-  addToCart: async (productId, quantity = 1, userId = 1) => {
+  addToCart: async (productId, quantity = 1) => {
+    const userId = getUserId();
+    if (!userId) throw new Error('User not logged in');
     return api.post('/cart/add/', { user_id: userId, product_id: productId, quantity });
   },
-  updateCart: async (productId, quantity, userId = 1) => {
+  updateCart: async (productId, quantity) => {
+    const userId = getUserId();
+    if (!userId) throw new Error('User not logged in');
     return api.put('/cart/update/', { user_id: userId, product_id: productId, quantity });
   },
-  removeFromCart: async (productId, userId = 1) => {
+  removeFromCart: async (productId) => {
+    const userId = getUserId();
+    if (!userId) throw new Error('User not logged in');
     return api.delete('/cart/remove/', { data: { user_id: userId, product_id: productId } });
   },
 };

@@ -120,15 +120,18 @@ const Checkout = () => {
       };
       
       await orderService.placeOrder(orderData);
+      
+      // Only proceed to success step if the API call succeeds
+      setStep(3); // Success step
+      setTimeout(() => {
+        clearCart();
+        navigate('/orders');
+      }, 5000);
     } catch (err) {
       console.error('Error placing order:', err);
+      alert('Failed to place order: ' + (err.response?.data?.message || err.response?.data?.detail || err.message || 'Unknown error'));
+      setLoading(false); // Make sure to stop loading if you have a loading state
     }
-
-    setStep(3); // Success step
-    setTimeout(() => {
-      clearCart();
-      navigate('/orders');
-    }, 5000);
   };
 
   if (checkoutItems.length === 0 && step !== 3) {

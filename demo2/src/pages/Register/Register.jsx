@@ -26,6 +26,13 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Validate phone number is exactly 10 digits
+    const phoneRegex = /^\d{10}$/;
+    if (!phoneRegex.test(formData.phone_number)) {
+      setError('Mobile number must be exactly 10 digits.');
+      return;
+    }
+
     setLoading(true);
     setError('');
     setSuccess('');
@@ -40,7 +47,7 @@ const Register = () => {
       });
       
       // Show success message
-      setSuccess('Successfully registered! You can now login.');
+      setSuccess('User registered successfully');
       
       // Clear form
       setFormData({
@@ -67,81 +74,95 @@ const Register = () => {
         </div>
 
         {error && <div className="auth-error">{error}</div>}
-        {success && <div className="auth-success" style={{color: 'green', padding: '10px', backgroundColor: '#e6ffe6', borderRadius: '8px', marginBottom: '20px', textAlign: 'center'}}>{success}</div>}
-
-        <form className="auth-form" onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label className="form-label">User Name</label>
-            <div className="input-with-icon">
-              <User size={18} />
-              <input 
-                name="userName"
-                type="text" 
-                className="form-control" 
-                placeholder="johndoe"
-                value={formData.username}
-                onChange={handleChange}
-                required 
-              />
+        
+        {success ? (
+          <div className="auth-success-container" style={{ textAlign: 'center', padding: '20px 0' }}>
+            <div className="auth-success" style={{color: 'green', padding: '15px', backgroundColor: '#e6ffe6', borderRadius: '8px', marginBottom: '25px', fontSize: '1.1rem', fontWeight: '500'}}>
+              {success}
             </div>
+            <p style={{ marginBottom: '20px' }}>Your account has been created and you are ready to explore.</p>
+            <Link to="/login" className="btn btn-primary" style={{ display: 'inline-block', textDecoration: 'none', padding: '10px 25px' }}>
+              Login Now
+            </Link>
           </div>
+        ) : (
+          <>
+            <form className="auth-form" onSubmit={handleSubmit}>
+              <div className="form-group">
+                <label className="form-label">User Name</label>
+                <div className="input-with-icon">
+                  <User size={18} />
+                  <input 
+                    name="userName"
+                    type="text" 
+                    className="form-control" 
+                    placeholder="johndoe"
+                    value={formData.username}
+                    onChange={handleChange}
+                    required 
+                  />
+                </div>
+              </div>
 
-          <div className="form-group">
-            <label className="form-label">Email Address</label>
-            <div className="input-with-icon">
-              <Mail size={18} />
-              <input 
-                name="email"
-                type="email" 
-                className="form-control" 
-                placeholder="email@example.com"
-                value={formData.email}
-                onChange={handleChange}
-                required 
-              />
+              <div className="form-group">
+                <label className="form-label">Email Address</label>
+                <div className="input-with-icon">
+                  <Mail size={18} />
+                  <input 
+                    name="email"
+                    type="email" 
+                    className="form-control" 
+                    placeholder="email@example.com"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required 
+                  />
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Phone Number</label>
+                <div className="input-with-icon">
+                  <Phone size={18} />
+                  <input 
+                    name="phone_number"
+                    type="tel" 
+                    className="form-control" 
+                    placeholder="1234567890"
+                    value={formData.phone_number}
+                    onChange={handleChange}
+                    maxLength="10"
+                    required 
+                  />
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Password</label>
+                <div className="input-with-icon">
+                  <Lock size={18} />
+                  <input 
+                    name="password"
+                    type="password" 
+                    className="form-control" 
+                    placeholder="••••••••"
+                    value={formData.password}
+                    onChange={handleChange}
+                    required 
+                  />
+                </div>
+              </div>
+
+              <button type="submit" className="btn btn-primary auth-submit" disabled={loading}>
+                {loading ? 'Creating Account...' : 'Register'} <UserPlus size={20} />
+              </button>
+            </form>
+
+            <div className="auth-footer">
+              <p>Already have an account? <Link to="/login">Login Now</Link></p>
             </div>
-          </div>
-
-          <div className="form-group">
-            <label className="form-label">Phone Number</label>
-            <div className="input-with-icon">
-              <Phone size={18} />
-              <input 
-                name="phone_number"
-                type="tel" 
-                className="form-control" 
-                placeholder="1234567890"
-                value={formData.phone_number}
-                onChange={handleChange}
-                required 
-              />
-            </div>
-          </div>
-
-          <div className="form-group">
-            <label className="form-label">Password</label>
-            <div className="input-with-icon">
-              <Lock size={18} />
-              <input 
-                name="password"
-                type="password" 
-                className="form-control" 
-                placeholder="••••••••"
-                value={formData.password}
-                onChange={handleChange}
-                required 
-              />
-            </div>
-          </div>
-
-          <button type="submit" className="btn btn-primary auth-submit" disabled={loading}>
-            {loading ? 'Creating Account...' : 'Register'} <UserPlus size={20} />
-          </button>
-        </form>
-
-        <div className="auth-footer">
-          <p>Already have an account? <Link to="/login">Login Now</Link></p>
-        </div>
+          </>
+        )}
       </div>
     </div>
   );

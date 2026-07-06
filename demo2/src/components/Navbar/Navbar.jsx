@@ -76,7 +76,7 @@ const Navbar = () => {
                 <button onClick={() => { logout(); setIsMenuOpen(false); }} className="logout-btn">Logout</button>
               </div>
             ) : (
-              <Link to="/login" className="btn btn-primary login-btn" onClick={() => setIsMenuOpen(false)}>
+              <Link to="/login" state={{ mode: 'login', timestamp: Date.now() }} className="btn btn-primary login-btn" onClick={() => setIsMenuOpen(false)}>
                 Login
               </Link>
             )}

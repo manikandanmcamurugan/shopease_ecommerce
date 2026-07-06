@@ -10,6 +10,7 @@ import Footer from './components/Footer/Footer';
 import AppRoutes from './routes/AppRoutes';
 import ScrollToTop from './components/ScrollToTop/ScrollToTop';
 import BackButton from './components/BackButton/BackButton';
+import LoginModal from './components/LoginModal/LoginModal';
 import './index.css';
 
 function App() {
@@ -26,6 +27,7 @@ function App() {
                 <main className="main-content">
                   <AppRoutes />
                 </main>
+                <LoginModal />
                 <Footer />
                 <BottomNav />
               </div>
