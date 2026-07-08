@@ -4,7 +4,7 @@ import ProductCard from '../../components/ProductCard/ProductCard';
 import productService from '../../services/productService';
 import Loader from '../../components/Loader/Loader';
 import Pagination from '../../components/Pagination/Pagination';
-import { Filter, SlidersHorizontal, ChevronDown, ChevronUp } from 'lucide-react';
+import { Filter, SlidersHorizontal, ChevronDown, ChevronUp, Menu } from 'lucide-react';
 import './Products.css';
 
 const Products = () => {
@@ -20,6 +20,7 @@ const Products = () => {
   const [priceRange, setPriceRange] = useState('All');
   const [showOffersOnly, setShowOffersOnly] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const itemsPerPage = 8;
 
   // Add state for mobile collapsible filters
@@ -152,10 +153,23 @@ const Products = () => {
             <option value="rating">Top Rated</option>
           </select>
         </div>
+
+        <button className="mobile-filter-btn d-md-none" onClick={() => setIsMobileFilterOpen(true)}>
+          <Menu size={24} />
+        </button>
       </header>
 
+      {isMobileFilterOpen && (
+        <div className="mobile-filter-overlay" onClick={() => setIsMobileFilterOpen(false)}></div>
+      )}
+
       <div className="products-layout">
-        <aside className="filters-sidebar">
+
+        <aside className={`filters-sidebar ${isMobileFilterOpen ? 'open' : ''}`}>
+          <div className="mobile-filter-header d-md-none" style={{ display: 'none', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border)' }}>
+            <h2 style={{ fontSize: '1.4rem', margin: 0 }}>Filter & Sort</h2>
+            <button onClick={() => setIsMobileFilterOpen(false)} style={{ background: 'none', border: 'none', fontSize: '2rem', lineHeight: 1 }}>&times;</button>
+          </div>
           <div className="filter-group">
             <h3 onClick={() => toggleFilter('category')} className="filter-header">
               <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>

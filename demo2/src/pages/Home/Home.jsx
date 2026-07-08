@@ -31,7 +31,6 @@ const Home = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
-  const [isHovered, setIsHovered] = useState(false);
 
   // For infinite loop, we will duplicate categories
   const [displayCategories, setDisplayCategories] = useState([]);
@@ -91,20 +90,29 @@ const Home = () => {
     }
   };
 
-  // Auto-scroll functionality
+  // Smooth continuous auto-scroll functionality
   useEffect(() => {
-    let intervalId;
-    if (!isDragging && !isHovered && scrollRef.current) {
-      intervalId = setInterval(() => {
-        if (scrollRef.current) {
-          scrollRef.current.scrollBy({ left: 300, behavior: 'smooth' });
+    let animationFrameId;
+    let lastTime = performance.now();
+
+    const smoothScroll = (time) => {
+      if (!isDragging && scrollRef.current) {
+        // Delta time for consistent speed regardless of refresh rate
+        const deltaTime = time - lastTime;
+        if (deltaTime > 16) { // Approx 60fps
+          scrollRef.current.scrollLeft += 1; // 1px per frame is a nice smooth speed
+          lastTime = time;
         }
-      }, 3000);
-    }
-    return () => {
-      if (intervalId) clearInterval(intervalId);
+      }
+      animationFrameId = requestAnimationFrame(smoothScroll);
     };
-  }, [isDragging, isHovered]);
+
+    animationFrameId = requestAnimationFrame(smoothScroll);
+
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, [isDragging]);
 
   const handleMouseDown = (e) => {
     setIsDragging(true);
@@ -114,7 +122,6 @@ const Home = () => {
 
   const handleMouseLeave = () => {
     setIsDragging(false);
-    setIsHovered(false);
   };
 
   const handleMouseUp = () => {
@@ -147,8 +154,6 @@ const Home = () => {
         </div>
         <div 
           className="categories-carousel-container"
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
         >
           <button className="carousel-nav-btn left" onClick={() => scroll(-300)} aria-label="Scroll left">
             &#8249;
@@ -177,10 +182,10 @@ const Home = () => {
       {/* Featured Products */}
       <section className="bg-alt">
         <div className="section container">
-          <div className="section-header-centered" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', paddingBottom: '10px' }}>
+          <div className="section-header-centered" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', paddingBottom: '10px', paddingLeft: '1rem' }}>
             <div style={{ textAlign: 'left' }}>
-              <h2 style={{ marginBottom: '0.5rem' }}>Featured Products</h2>
-              <p style={{ margin: 0, color: 'var(--text-muted)' }}>Our handpicked selections for you</p>
+              <h2 style={{ marginBottom: '0.8rem' }}>Featured Products</h2>
+              <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.85rem' }}>Our handpicked selections for you</p>
             </div>
             <div style={{ display: 'flex', gap: '0.5rem' }} className="d-none d-md-flex">
               <button onClick={() => scrollProductCarousel(featuredRef, 'left')} className="carousel-nav-btn-small">
@@ -205,10 +210,10 @@ const Home = () => {
 
       {/* New Arrivals */}
       <section className="section container">
-        <div className="section-header-centered" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', paddingBottom: '10px' }}>
+        <div className="section-header-centered" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', paddingBottom: '10px', paddingLeft: '1rem' }}>
           <div style={{ textAlign: 'left' }}>
-            <h2 style={{ marginBottom: '0.5rem' }}>New Arrivals</h2>
-            <p style={{ margin: 0, color: 'var(--text-muted)' }}>Fresh drops just for you</p>
+            <h2 style={{ marginBottom: '0.8rem' }}>New Arrivals</h2>
+            <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.85rem' }}>Fresh drops just for you</p>
           </div>
           <div style={{ display: 'flex', gap: '0.5rem' }} className="d-none d-md-flex">
             <button onClick={() => scrollProductCarousel(newArrivalsRef, 'left')} className="carousel-nav-btn-small">
@@ -233,10 +238,10 @@ const Home = () => {
       {/* Best Sellers */}
       <section className="bg-alt">
         <div className="section container">
-          <div className="section-header-centered" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', paddingBottom: '10px' }}>
+          <div className="section-header-centered" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', paddingBottom: '10px', paddingLeft: '1rem' }}>
             <div style={{ textAlign: 'left' }}>
-              <h2 style={{ marginBottom: '0.5rem' }}>Best Sellers</h2>
-              <p style={{ margin: 0, color: 'var(--text-muted)' }}>Most loved by our community</p>
+              <h2 style={{ marginBottom: '0.8rem' }}>Best Sellers</h2>
+              <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.85rem' }}>Most loved by our community</p>
             </div>
             <div style={{ display: 'flex', gap: '0.5rem' }} className="d-none d-md-flex">
               <button onClick={() => scrollProductCarousel(bestSellersRef, 'left')} className="carousel-nav-btn-small">

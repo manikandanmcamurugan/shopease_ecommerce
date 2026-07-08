@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, ShoppingCart, Heart, User, Menu, X } from 'lucide-react';
+import { Search, ShoppingCart, Heart, User, Menu, X, LogOut } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { useWishlist } from '../../context/WishlistContext';
 import { useAuth } from '../../context/AuthContext';
@@ -42,8 +42,7 @@ const Navbar = () => {
         <ul className={`nav-links ${isMenuOpen ? 'active' : ''}`}>
           <li className="nav-text-link"><Link to="/" onClick={() => setIsMenuOpen(false)}>Home</Link></li>
           <li className="nav-text-link"><Link to="/products" onClick={() => setIsMenuOpen(false)}>Products</Link></li>
-          <li className="nav-text-link"><Link to="/about" onClick={() => setIsMenuOpen(false)}>About Us</Link></li>
-          <li className="nav-text-link"><Link to="/contact" onClick={() => setIsMenuOpen(false)}>Contact</Link></li>
+
 
           {/* Mobile Search Icon */}
           <li className="nav-icon-link mobile-search-btn">
@@ -82,7 +81,10 @@ const Navbar = () => {
                   </div>
                 </div>
                 <div className="nav-divider"></div>
-                <button onClick={() => { logout(); setIsMenuOpen(false); }} className="logout-btn">Logout</button>
+                <button onClick={() => { logout(); setIsMenuOpen(false); }} className="logout-btn" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                  <LogOut size={20} />
+                  <span>Logout</span>
+                </button>
               </div>
             ) : (
               <Link to="/login" state={{ mode: 'login', timestamp: Date.now() }} className="btn btn-primary login-btn" onClick={() => setIsMenuOpen(false)}>

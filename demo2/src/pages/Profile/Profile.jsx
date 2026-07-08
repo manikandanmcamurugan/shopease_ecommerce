@@ -35,6 +35,8 @@ const Profile = () => {
   // Address State
   const [showAddressForm, setShowAddressForm] = useState(false);
   const [newAddressForm, setNewAddressForm] = useState({ street: '', city: '', zip: '' });
+  const [addresses, setAddresses] = useState([]);
+  const [editingId, setEditingId] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -55,6 +57,8 @@ const Profile = () => {
       }
     };
     fetchData();
+    const savedAddrs = JSON.parse(localStorage.getItem('shopease_addresses')) || [];
+    setAddresses(savedAddrs);
   }, []);
 
   const handleEditToggle = () => {
@@ -155,30 +159,88 @@ const Profile = () => {
       addToast('Please fill all address fields', 'error');
       return;
     }
-    setSaving(true);
-    try {
-      const fullAddress = `${newAddressForm.street}, ${newAddressForm.city}, ${newAddressForm.zip}`;
-      const formData = new FormData();
-      formData.append('name', profile?.name || profile?.username || user?.name || '');
-      formData.append('email', profile?.email || user?.email || '');
-      formData.append('address', fullAddress);
-      formData.append('phone', profile?.phone || profile?.phone_number || user?.phone || '');
-      
-      const userId = user?.id || 1;
-      await authService.updateProfile(userId, formData);
-      
-      const profRes = await authService.getProfile();
-      setProfile(profRes.data);
-      if (updateUser) updateUser(profRes.data);
-      
-      setShowAddressForm(false);
-      setNewAddressForm({ street: '', city: '', zip: '' });
-      addToast('Address added successfully!', 'success');
-    } catch(err) {
-      addToast('Failed to save address', 'error');
-    } finally {
-      setSaving(false);
+
+    if (editingId === 'default') {
+      setSaving(true);
+      try {
+        const fullAddress = `${newAddressForm.street}, ${newAddressForm.city}, ${newAddressForm.zip}`;
+        const formData = new FormData();
+        formData.append('name', profile?.name || profile?.username || user?.name || '');
+        formData.append('email', profile?.email || user?.email || '');
+        formData.append('address', fullAddress);
+        formData.append('phone', profile?.phone || profile?.phone_number || user?.phone || '');
+        
+        const userId = user?.id || 1;
+        await authService.updateProfile(userId, formData);
+        
+        const profRes = await authService.getProfile();
+        setProfile(profRes.data);
+        if (updateUser) updateUser(profRes.data);
+        
+        setShowAddressForm(false);
+        setNewAddressForm({ street: '', city: '', zip: '' });
+        setEditingId(null);
+        addToast('Default address updated successfully!', 'success');
+      } catch(err) {
+        addToast('Failed to update default address', 'error');
+      } finally {
+        setSaving(false);
+      }
+      return;
     }
+
+    let updated;
+    if (editingId) {
+      updated = addresses.map(a => a.id === editingId ? { ...a, address: newAddressForm.street, city: newAddressForm.city, zip: newAddressForm.zip } : a);
+    } else {
+      const newAddr = {
+        id: Date.now().toString(),
+        address: newAddressForm.street,
+        city: newAddressForm.city,
+        zip: newAddressForm.zip,
+        firstName: profile?.name || profile?.username || user?.name || '',
+        lastName: '',
+        phone: profile?.phone || profile?.phone_number || user?.phone || '',
+        isDefault: false
+      };
+      updated = [...addresses, newAddr];
+    }
+    
+    setAddresses(updated);
+    localStorage.setItem('shopease_addresses', JSON.stringify(updated));
+    setShowAddressForm(false);
+    setNewAddressForm({ street: '', city: '', zip: '' });
+    setEditingId(null);
+    addToast(editingId ? 'Address updated successfully!' : 'Address added successfully!', 'success');
+  };
+
+  const handleEditAddress = (addr) => {
+    setNewAddressForm({
+      street: addr.address || '',
+      city: addr.city || '',
+      zip: addr.zip || ''
+    });
+    setEditingId(addr.id);
+    setShowAddressForm(true);
+  };
+
+  const handleEditDefaultAddress = () => {
+    const addrStr = profile?.address || user?.address || '';
+    const parts = addrStr.split(',').map(s => s.trim());
+    setNewAddressForm({
+      street: parts[0] || '',
+      city: parts[1] || '',
+      zip: parts[2] || ''
+    });
+    setEditingId('default');
+    setShowAddressForm(true);
+  };
+
+  const handleRemoveAddress = (id) => {
+    const updated = addresses.filter(a => a.id !== id);
+    setAddresses(updated);
+    localStorage.setItem('shopease_addresses', JSON.stringify(updated));
+    addToast('Address removed', 'success');
   };
 
   if (loading) return <Loader />;
@@ -278,7 +340,11 @@ const Profile = () => {
                 <h2>Manage Addresses</h2>
               </div>
               {!showAddressForm && (
-                <button className="btn btn-primary btn-sm" onClick={() => setShowAddressForm(true)}>
+                <button className="btn btn-primary btn-sm" onClick={() => {
+                  setNewAddressForm({ street: '', city: '', zip: '' });
+                  setEditingId(null);
+                  setShowAddressForm(true);
+                }}>
                   <Map size={16} /> Add New
                 </button>
               )}
@@ -286,7 +352,7 @@ const Profile = () => {
             
             {showAddressForm && (
               <div className="password-form-container mt-4 mb-4 pt-3 border-top w-100">
-                <h4 className="mb-3">Add New Address</h4>
+                <h4 className="mb-3">{editingId ? 'Edit Address' : 'Add New Address'}</h4>
                 <div className="address-form-grid">
                   <div className="address-form-item full-width">
                     <label>Street Address</label>
@@ -305,7 +371,7 @@ const Profile = () => {
                   <button className="btn btn-primary btn-sm" onClick={handleSaveNewAddress} disabled={saving}>
                     {saving ? 'Saving...' : 'Save Address'}
                   </button>
-                  <button className="btn btn-outline btn-sm" onClick={() => setShowAddressForm(false)} disabled={saving}>
+                  <button className="btn btn-outline btn-sm" onClick={() => { setShowAddressForm(false); setEditingId(null); }} disabled={saving}>
                     Cancel
                   </button>
                 </div>
@@ -319,19 +385,35 @@ const Profile = () => {
                     <div className="address-header">
                       <h3>{displayName}</h3>
                       <span className="address-type">Home</span>
-                      <span className="address-badge d-md-none">Default</span>
                     </div>
                     <p className="address-body">{displayAddress}</p>
                     <p className="address-phone"><span className="fw-bold">Phone:</span> {displayPhone}</p>
                   </div>
                   <div className="address-right-panel">
-                    <span className="address-badge d-none d-md-block mb-3 text-center">Default</span>
                     <div className="address-actions">
-                      <button className="btn-link" onClick={() => setShowAddressForm(true)}>Edit</button>
+                      <button className="btn-link" onClick={handleEditDefaultAddress}>Edit</button>
                       <button className="btn-link text-danger" onClick={() => addToast('Cannot remove default address', 'error')}>Remove</button>
                     </div>
                   </div>
                 </div>
+                {addresses.map(addr => (
+                  <div className="address-card" key={addr.id}>
+                    <div className="address-content-wrap">
+                      <div className="address-header">
+                        <h3>{addr.firstName} {addr.lastName}</h3>
+                        <span className="address-type">Other</span>
+                      </div>
+                      <p className="address-body">{addr.address}, {addr.city}, {addr.zip}</p>
+                      <p className="address-phone"><span className="fw-bold">Phone:</span> {addr.phone}</p>
+                    </div>
+                    <div className="address-right-panel">
+                      <div className="address-actions">
+                        <button className="btn-link" onClick={() => handleEditAddress(addr)}>Edit</button>
+                        <button className="btn-link text-danger" onClick={() => handleRemoveAddress(addr.id)}>Remove</button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </section>
@@ -388,16 +470,14 @@ const Profile = () => {
               </div>
             </div>
             <div className="settings-grid">
-              <div className="settings-card" style={showPasswordForm ? { gridColumn: '1 / -1', flexDirection: 'column' } : {}}>
-                <div style={{ display: 'flex', width: '100%', gap: '1rem' }}>
-                  <div className="settings-icon-wrapper bg-blue-100 text-blue-600"><Lock size={24} /></div>
-                  <div className="settings-content" style={{ flex: 1 }}>
-                    <h3>Change Password</h3>
-                    <p>Update your password to keep your account secure.</p>
-                    {!showPasswordForm && (
-                      <button className="btn btn-outline btn-sm mt-3" onClick={() => setShowPasswordForm(true)}>Update Password</button>
-                    )}
-                  </div>
+              <div className="settings-card" style={showPasswordForm ? { gridColumn: '1 / -1' } : {}}>
+                <div className="settings-icon-wrapper bg-blue-100 text-blue-600"><Lock size={24} /></div>
+                <div className="settings-content">
+                  <h3>Change Password</h3>
+                  <p>Update your password to keep your account secure.</p>
+                  {!showPasswordForm && (
+                    <button className="btn btn-outline btn-sm mt-3" onClick={() => setShowPasswordForm(true)}>Update Password</button>
+                  )}
                 </div>
                 
                 {showPasswordForm && (

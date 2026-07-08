@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Home from '../pages/Home/Home';
 import Products from '../pages/Products/Products';
 import ProductDetails from '../pages/ProductDetails/ProductDetails';
@@ -16,12 +16,16 @@ import Contact from '../pages/Contact/Contact';
 import FAQ from '../pages/FAQ/FAQ';
 import ShippingPolicy from '../pages/ShippingPolicy/ShippingPolicy';
 import ReturnRefund from '../pages/ReturnRefund/ReturnRefund';
+import PrivacyPolicy from '../pages/PrivacyPolicy/PrivacyPolicy';
+import TermsConditions from '../pages/TermsConditions/TermsConditions';
+import Careers from '../pages/Careers/Careers';
 import { useAuth } from '../context/AuthContext';
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
+  const location = useLocation();
   if (loading) return null;
-  if (!user) return <Navigate to="/login" />;
+  if (!user) return <Navigate to="/login" state={{ from: location }} replace />;
   return children;
 };
 
@@ -35,6 +39,9 @@ const AppRoutes = () => {
       <Route path="/faq" element={<FAQ />} />
       <Route path="/shipping-policy" element={<ShippingPolicy />} />
       <Route path="/return-refund" element={<ReturnRefund />} />
+      <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+      <Route path="/terms-conditions" element={<TermsConditions />} />
+      <Route path="/careers" element={<Careers />} />
       <Route path="/products/:id" element={<ProductDetails />} />
       <Route path="/cart" element={<Cart />} />
       <Route path="/wishlist" element={<Wishlist />} />

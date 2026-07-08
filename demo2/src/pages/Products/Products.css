@@ -123,6 +123,10 @@
   color: var(--text-muted);
 }
 
+.mobile-filter-btn {
+  display: none;
+}
+
 @media (max-width: 968px) {
   .products-header {
     margin-top: 2.5rem;
@@ -143,60 +147,85 @@
     font-size: 0.85rem;
     white-space: nowrap;
   }
+  
+  .mobile-filter-btn {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    color: var(--text-main);
+    border: none;
+    padding: 0.5rem;
+    cursor: pointer;
+  }
+  
+  .mobile-filter-btn:hover {
+    color: var(--primary);
+  }
+  
+  .mobile-filter-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 1999;
+  }
 
   .products-layout {
     grid-template-columns: 1fr;
+    margin: 0 -1rem;
   }
   
   .filters-sidebar {
-    position: static;
-    z-index: 100;
-    background: var(--background);
-    display: flex;
-    overflow-x: auto;
-    gap: 0.75rem;
-    padding: 1rem;
-    margin-bottom: 1rem;
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 300px;
+    height: 100vh;
+    background: var(--white);
+    z-index: 2000;
+    padding: 2rem 1.5rem;
+    overflow-y: auto;
+    transition: right 0.3s ease;
+    display: block;
+    box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+    margin: 0;
+    border-radius: 0;
+  }
+
+  .filters-sidebar.open {
+    right: 0;
   }
   
-  .filters-sidebar::-webkit-scrollbar {
-    display: none;
+  .mobile-filter-header {
+    display: flex !important;
   }
-  
+
   .filter-group {
-    margin-bottom: 0;
-    border-bottom: none;
-    padding-bottom: 0;
-    flex: 0 0 auto;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 1.5rem;
     position: relative;
   }
 
   .filter-header {
-    background: var(--white);
-    border: 1px solid var(--border);
-    border-radius: 50px;
-    padding: 0.5rem 1rem;
-    font-size: 0.85rem;
-    white-space: nowrap;
-    margin: 0;
-    color: var(--text-main);
-    gap: 0.5rem;
+    background: transparent;
+    border: none;
+    padding: 0;
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    white-space: normal;
   }
 
   .filter-content {
-    position: fixed;
-    top: calc(var(--nav-height, 70px) + 65px); /* Position it just below the scrollable pill bar */
-    left: 1rem;
-    right: 1rem;
-    background: var(--white);
-    border: 1px solid var(--border);
-    box-shadow: var(--shadow-lg);
-    border-radius: var(--radius);
-    padding: 1.5rem;
-    z-index: 1000;
-    margin-top: 0;
+    position: static;
+    box-shadow: none;
+    border: none;
+    padding: 0;
+    margin-top: 1rem;
+    display: none;
   }
 }
 

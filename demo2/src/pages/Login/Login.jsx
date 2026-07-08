@@ -157,7 +157,8 @@ const Login = () => {
         }
 
         updateAuthContext(user);
-        navigate('/profile');
+        const from = location.state?.from?.pathname || '/profile';
+        navigate(from, { state: location.state?.from?.state, replace: true });
       } else {
         await authService.register({
           username: formData.username,

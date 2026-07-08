@@ -212,9 +212,20 @@ const ProductDetails = () => {
           <p className="details-price">₹{displayPrice.toFixed(2)}</p>
           <p className="details-desc">{product.description}</p>
           
-          <p className="details-stock" style={{ color: inStock ? '#16a34a' : '#ef4444', fontWeight: '500', marginBottom: '1rem' }}>
-            {inStock ? `In Stock (${displayStock} available)` : 'Out of Stock'}
-          </p>
+          <div className="details-stock" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1rem' }}>
+            <p style={{ color: inStock ? '#16a34a' : '#ef4444', fontWeight: '500', margin: 0 }}>
+              {inStock ? `In Stock (${displayStock} available)` : 'Out of Stock'}
+            </p>
+            {!inStock && (
+              <button 
+                className="btn btn-outline" 
+                style={{ padding: '0.25rem 0.75rem', fontSize: '0.8rem', borderRadius: '4px' }}
+                onClick={() => alert("You will be notified when this product is back in stock!")}
+              >
+                Notify Me
+              </button>
+            )}
+          </div>
 
           {(availableColors.length > 0 || availableSizes.length > 0) && (
             <div className="product-variants-selectors">

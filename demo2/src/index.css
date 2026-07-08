@@ -60,6 +60,7 @@ body {
   background-color: var(--background);
   color: var(--text-main);
   line-height: 1.5;
+  font-size: medium;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -99,7 +100,7 @@ img {
 }
 
 .section {
-  padding: 4rem 0;
+  padding: 2.5rem 0;
 }
 
 @media (max-width: 768px) {
@@ -107,7 +108,7 @@ img {
     padding: 0 1rem;
   }
   .section {
-    padding: 2.5rem 0;
+    padding: 1.5rem 0;
   }
 }
 
@@ -142,13 +143,33 @@ img {
   scrollbar-width: none;  /* Firefox */
 }
 
+@media (max-width: 575px) {
+  .product-carousel-track {
+    gap: 2px;
+  }
+}
+
 .product-carousel-track::-webkit-scrollbar {
   display: none; /* Chrome, Safari and Opera */
 }
 
 .product-carousel-item {
   flex: 0 0 calc(25% - 1.125rem); /* Default 4 items visible */
-  min-width: 250px;
+  min-width: 200px;
+}
+
+/* Desktop: 5 items visible */
+@media (min-width: 1024px) {
+  .product-carousel-item {
+    flex: 0 0 calc(20% - 1.2rem);
+  }
+}
+
+/* Large Desktop: 6 items visible */
+@media (min-width: 1280px) {
+  .product-carousel-item {
+    flex: 0 0 calc(16.666% - 1.25rem);
+  }
 }
 
 @media (max-width: 968px) {
@@ -166,8 +187,8 @@ img {
 
 @media (max-width: 576px) {
   .product-carousel-item {
-    flex: 0 0 calc(50% - 0.25rem); /* 2 items per row with small gap */
-    min-width: 150px;
+    flex: 0 0 calc(50% - 1px); /* 2 items per row with 2px gap (1px each) */
+    min-width: 140px; /* matched to mobile grid minmax */
   }
 }
 
@@ -194,8 +215,14 @@ img {
 }
 
 /* Mobile grids (up to 575px) */
-.grid-2, .grid-3, .grid-4 {
-  grid-template-columns: repeat(2, 1fr); /* 2 columns on mobile for product grids */
+@media (max-width: 575px) {
+  .grid {
+    gap: 0;
+    justify-content: flex-start;
+  }
+  .grid-2, .grid-3, .grid-4 {
+    grid-template-columns: repeat(2, 159px); /* strictly force 2 columns on mobile */
+  }
 }
 
 /* Tablet / Large Phone: 2 columns */
@@ -213,7 +240,14 @@ img {
 
 /* Desktop: 4 columns */
 @media (min-width: 1024px) {
+  .grid-3 { grid-template-columns: repeat(4, 1fr); }
   .grid-4 { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* Large Desktop: 5 columns */
+@media (min-width: 1280px) {
+  .grid-3 { grid-template-columns: repeat(5, 1fr); }
+  .grid-4 { grid-template-columns: repeat(5, 1fr); }
 }
 
 /* Form Styles */

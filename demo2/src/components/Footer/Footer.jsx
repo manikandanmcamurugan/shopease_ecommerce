@@ -43,6 +43,15 @@ const Footer = () => {
             </ul>
           </div>
 
+          <div className="footer-links">
+            <h3>Company</h3>
+            <ul>
+              <li><Link to="/about">About Us</Link></li>
+              <li><Link to="/privacy-policy">Privacy Policy</Link></li>
+              <li><Link to="/terms-conditions">Terms & Conditions</Link></li>
+            </ul>
+          </div>
+
           <div className="footer-contact">
             <h3>Contact Us</h3>
             <div className="contact-item">
@@ -62,9 +71,19 @@ const Footer = () => {
         
         <div className="footer-bottom">
           <p>&copy; {new Date().getFullYear()} ShopEase. All rights reserved.</p>
-          <div className="payment-icons">
-            {/* Mock payment icons */}
-            <span>Visa</span> | <span>Mastercard</span> | <span>PayPal</span> | <span>Stripe</span>
+          <div className="payment-icons" style={{ display: 'flex', gap: '15px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <a href="https://www.visa.com" target="_blank" rel="noopener noreferrer" title="Visa">
+              <img src="https://upload.wikimedia.org/wikipedia/commons/4/41/Visa_Logo.png" alt="Visa" style={{ height: '14px', objectFit: 'contain' }} />
+            </a>
+            <a href="https://www.mastercard.com" target="_blank" rel="noopener noreferrer" title="Mastercard">
+              <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" style={{ height: '16px', objectFit: 'contain' }} />
+            </a>
+            <a href="https://www.paypal.com" target="_blank" rel="noopener noreferrer" title="PayPal">
+              <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" style={{ height: '14px', objectFit: 'contain' }} />
+            </a>
+            <a href="https://stripe.com" target="_blank" rel="noopener noreferrer" title="Stripe">
+              <img src="https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_Logo%2C_revised_2016.svg" alt="Stripe" style={{ height: '14px', objectFit: 'contain' }} />
+            </a>
           </div>
         </div>
       </div>

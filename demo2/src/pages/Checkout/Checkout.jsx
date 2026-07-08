@@ -95,6 +95,7 @@ const Checkout = () => {
   const proceedToPayment = () => {
     if (selectedAddressId) {
       setStep(2);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
@@ -123,6 +124,7 @@ const Checkout = () => {
       
       // Only proceed to success step if the API call succeeds
       setStep(3); // Success step
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       setTimeout(() => {
         clearCart();
         navigate('/orders');
@@ -248,11 +250,6 @@ const Checkout = () => {
                         )}
                       </div>
                     </div>
-                    {selectedAddressId === addr.id && (
-                      <div className="card-deliver-btn">
-                        <button type="button" className="btn btn-primary" onClick={proceedToPayment}>Deliver to this address</button>
-                      </div>
-                    )}
                   </div>
                 ))}
                 
@@ -263,7 +260,13 @@ const Checkout = () => {
             )}
           </div>
           
-          <OrderSummary cartItems={checkoutItems} cartTotal={checkoutTotal} />
+          <OrderSummary 
+            cartItems={checkoutItems} 
+            cartTotal={checkoutTotal}
+            showProceedButton={step === 1}
+            onProceed={proceedToPayment}
+            proceedDisabled={!selectedAddressId}
+          />
         </div>
       )}
 
@@ -273,7 +276,7 @@ const Checkout = () => {
             
             <div className="flipkart-header">
               <div className="flipkart-header-left">
-                <button className="back-arrow" onClick={() => setStep(1)}><ArrowLeft size={20} /></button>
+                <button className="back-arrow" onClick={() => { setStep(1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}><ArrowLeft size={20} /></button>
                 <div className="header-text">
                   <span className="step-count">Step 3 of 3</span>
                   <h2>Payments</h2>
@@ -405,7 +408,7 @@ const Checkout = () => {
   );
 };
 
-const OrderSummary = ({ cartItems, cartTotal }) => {
+const OrderSummary = ({ cartItems, cartTotal, showProceedButton, onProceed, proceedDisabled }) => {
   const getPrice = (item) => Number(item.price ?? item.unit_price ?? item.product?.price ?? item.product?.unit_price ?? item.product_price ?? 0);
   const getName = (item) => item.name ?? item.product?.name ?? item.product_name ?? 'Product';
   const getImage = (item) => item.image ?? item.product?.image ?? item.product_image ?? '/placeholder.png';
@@ -446,6 +449,16 @@ const OrderSummary = ({ cartItems, cartTotal }) => {
         <div className="trust-item"><ShieldCheck size={16} /> <span>Secure checkout</span></div>
         <div className="trust-item"><Truck size={16} /> <span>Insured shipping</span></div>
       </div>
+      {showProceedButton && (
+        <button 
+          className="btn btn-primary" 
+          style={{ width: '100%', marginTop: '1rem', padding: '1rem' }}
+          onClick={onProceed}
+          disabled={proceedDisabled}
+        >
+          Proceed to Payment
+        </button>
+      )}
     </div>
   );
 };

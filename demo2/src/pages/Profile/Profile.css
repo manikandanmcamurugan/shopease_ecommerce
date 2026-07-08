@@ -355,7 +355,7 @@
 /* Addresses */
 .addresses-list {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 1.5rem;
 }
 
@@ -488,6 +488,8 @@
   padding: 1.5rem;
   transition: all 0.2s ease;
   background: #f8fafc;
+  display: flex;
+  flex-direction: column;
 }
 
 .settings-card:hover {
@@ -506,6 +508,12 @@
   margin-bottom: 1rem;
 }
 
+.settings-content {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
 .settings-content h3 {
   font-size: 1.1rem;
   font-weight: 600;
@@ -518,6 +526,12 @@
   font-size: 0.9rem;
   line-height: 1.5;
   margin-bottom: 1rem;
+  flex-grow: 1;
+}
+
+.settings-content button {
+  margin-top: auto !important;
+  align-self: flex-start;
 }
 
 /* Orders List */
