@@ -314,3 +314,6 @@
     display: none; /* Hide arrows on mobile for cleaner look */
   }
 }
+.slider-dots-modern {
+  transform: translate(-50%, -10px);
+}

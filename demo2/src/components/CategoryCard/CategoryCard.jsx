@@ -15,10 +15,9 @@ const CategoryCard = ({ category }) => {
     <Link to={`/products?category=${categoryName}`} className="category-card">
       <div className="category-image">
         <img src={displayImage} alt={categoryName} />
-        <div className="category-overlay">
-          <h3>{categoryName}</h3>
-          <span>Shop Now</span>
-        </div>
+      </div>
+      <div className="category-title">
+        <h3>{categoryName}</h3>
       </div>
     </Link>
   );

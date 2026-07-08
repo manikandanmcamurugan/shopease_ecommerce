@@ -36,3 +36,21 @@
     display: flex;
   }
 }
+
+.bottom-nav-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), #818cf8);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 12px;
+  box-shadow: 0 2px 5px rgba(99, 102, 241, 0.3);
+}
+
+.bottom-nav-item.active .bottom-nav-avatar {
+  box-shadow: 0 0 0 2px var(--white), 0 0 0 4px var(--primary);
+}

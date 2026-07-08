@@ -177,15 +177,17 @@ const Home = () => {
       {/* Featured Products */}
       <section className="bg-alt">
         <div className="section container">
-          <div className="section-header-centered" style={{ position: 'relative', textAlign: 'center', marginBottom: '2rem', paddingBottom: '10px' }}>
-            <h2 style={{ marginBottom: '0.5rem' }}>Featured Products</h2>
-            <p style={{ margin: 0, color: 'var(--text-muted)' }}>Our handpicked selections for you</p>
-            <div className="carousel-nav-arrows d-none d-md-flex" style={{ display: 'flex', gap: '0.5rem', position: 'absolute', right: 0, bottom: '10px' }}>
-              <button onClick={() => scrollProductCarousel(featuredRef, 'left')} style={{ width: '40px', height: '40px', borderRadius: '50%', border: '1px solid var(--border)', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-                <ChevronLeft size={20} />
+          <div className="section-header-centered" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', paddingBottom: '10px' }}>
+            <div style={{ textAlign: 'left' }}>
+              <h2 style={{ marginBottom: '0.5rem' }}>Featured Products</h2>
+              <p style={{ margin: 0, color: 'var(--text-muted)' }}>Our handpicked selections for you</p>
+            </div>
+            <div style={{ display: 'flex', gap: '0.5rem' }} className="d-none d-md-flex">
+              <button onClick={() => scrollProductCarousel(featuredRef, 'left')} className="carousel-nav-btn-small">
+                <ChevronLeft size={18} />
               </button>
-              <button onClick={() => scrollProductCarousel(featuredRef, 'right')} style={{ width: '40px', height: '40px', borderRadius: '50%', border: '1px solid var(--border)', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-                <ChevronRight size={20} />
+              <button onClick={() => scrollProductCarousel(featuredRef, 'right')} className="carousel-nav-btn-small">
+                <ChevronRight size={18} />
               </button>
             </div>
           </div>
@@ -203,15 +205,17 @@ const Home = () => {
 
       {/* New Arrivals */}
       <section className="section container">
-        <div className="section-header-centered" style={{ position: 'relative', textAlign: 'center', marginBottom: '2rem', paddingBottom: '10px' }}>
-          <h2 style={{ marginBottom: '0.5rem' }}>New Arrivals</h2>
-          <p style={{ margin: 0, color: 'var(--text-muted)' }}>Fresh drops just for you</p>
-          <div className="carousel-nav-arrows d-none d-md-flex" style={{ display: 'flex', gap: '0.5rem', position: 'absolute', right: 0, bottom: '10px' }}>
-            <button onClick={() => scrollProductCarousel(newArrivalsRef, 'left')} style={{ width: '40px', height: '40px', borderRadius: '50%', border: '1px solid var(--border)', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-              <ChevronLeft size={20} />
+        <div className="section-header-centered" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', paddingBottom: '10px' }}>
+          <div style={{ textAlign: 'left' }}>
+            <h2 style={{ marginBottom: '0.5rem' }}>New Arrivals</h2>
+            <p style={{ margin: 0, color: 'var(--text-muted)' }}>Fresh drops just for you</p>
+          </div>
+          <div style={{ display: 'flex', gap: '0.5rem' }} className="d-none d-md-flex">
+            <button onClick={() => scrollProductCarousel(newArrivalsRef, 'left')} className="carousel-nav-btn-small">
+              <ChevronLeft size={18} />
             </button>
-            <button onClick={() => scrollProductCarousel(newArrivalsRef, 'right')} style={{ width: '40px', height: '40px', borderRadius: '50%', border: '1px solid var(--border)', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-              <ChevronRight size={20} />
+            <button onClick={() => scrollProductCarousel(newArrivalsRef, 'right')} className="carousel-nav-btn-small">
+              <ChevronRight size={18} />
             </button>
           </div>
         </div>
@@ -229,15 +233,17 @@ const Home = () => {
       {/* Best Sellers */}
       <section className="bg-alt">
         <div className="section container">
-          <div className="section-header-centered" style={{ position: 'relative', textAlign: 'center', marginBottom: '2rem', paddingBottom: '10px' }}>
-            <h2 style={{ marginBottom: '0.5rem' }}>Best Sellers</h2>
-            <p style={{ margin: 0, color: 'var(--text-muted)' }}>Most loved by our community</p>
-            <div className="carousel-nav-arrows d-none d-md-flex" style={{ display: 'flex', gap: '0.5rem', position: 'absolute', right: 0, bottom: '10px' }}>
-              <button onClick={() => scrollProductCarousel(bestSellersRef, 'left')} style={{ width: '40px', height: '40px', borderRadius: '50%', border: '1px solid var(--border)', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-                <ChevronLeft size={20} />
+          <div className="section-header-centered" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', paddingBottom: '10px' }}>
+            <div style={{ textAlign: 'left' }}>
+              <h2 style={{ marginBottom: '0.5rem' }}>Best Sellers</h2>
+              <p style={{ margin: 0, color: 'var(--text-muted)' }}>Most loved by our community</p>
+            </div>
+            <div style={{ display: 'flex', gap: '0.5rem' }} className="d-none d-md-flex">
+              <button onClick={() => scrollProductCarousel(bestSellersRef, 'left')} className="carousel-nav-btn-small">
+                <ChevronLeft size={18} />
               </button>
-              <button onClick={() => scrollProductCarousel(bestSellersRef, 'right')} style={{ width: '40px', height: '40px', borderRadius: '50%', border: '1px solid var(--border)', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-                <ChevronRight size={20} />
+              <button onClick={() => scrollProductCarousel(bestSellersRef, 'right')} className="carousel-nav-btn-small">
+                <ChevronRight size={18} />
               </button>
             </div>
           </div>

@@ -1,8 +1,8 @@
 .product-card {
   background-color: var(--card-bg);
-  border-radius: var(--radius);
+  border-radius: 8px; /* Sharper corners like Amazon */
   overflow: hidden;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   border: 1px solid var(--border);
   position: relative;
   display: flex;
@@ -130,7 +130,8 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 0.75rem;
+  gap: 0.5rem;
+  width: 100%;
 }
 
 .price {
@@ -140,14 +141,14 @@
 }
 
 .add-cart-btn {
-  background: transparent;
-  color: var(--primary);
+  background: var(--primary);
+  color: white;
   font-size: 0.85rem;
   font-weight: 600;
-  padding: 0.4rem 0.6rem;
+  padding: 0.5rem 0.6rem;
   border-radius: 4px;
-  border: 1px solid var(--primary);
-  flex: 1;
+  border: none;
+  width: 100%;
 }
 
 .add-cart-btn:hover {
@@ -157,20 +158,21 @@
 
 .card-buttons {
   display: flex;
-  gap: 0.5rem;
+  flex-direction: column;
+  gap: 0.4rem;
   width: 100%;
   margin-top: 0.5rem;
 }
 
 .buy-now-btn {
-  background: var(--primary);
+  background: var(--accent); /* Often orange/yellow in Amazon */
   color: white;
   font-size: 0.85rem;
   font-weight: 600;
-  padding: 0.4rem 0.6rem;
+  padding: 0.5rem 0.6rem;
   border-radius: 4px;
-  border: 1px solid var(--primary);
-  flex: 1;
+  border: none;
+  width: 100%;
   transition: all 0.3s ease;
 }
 
@@ -192,57 +194,53 @@
 }
 
 @media (max-width: 768px) {
-  /* Touch Optimization: Increase tap targets without changing design aesthetics */
-  .add-cart-btn, .buy-now-btn {
-    padding: 0.75rem 1rem;
-  }
-  
   .action-btn {
-    width: 44px;
-    height: 44px;
+    width: 36px;
+    height: 36px;
   }
   
-  /* Ensure hover-only buttons are always partially visible or easily tappable on touch screens */
+  /* Ensure actions are always visible on touch screens since there's no hover */
   .product-actions {
-    display: none;
+    right: 0.5rem;
+    top: 0.5rem;
   }
 }
 
 @media (max-width: 575px) {
-  /* When 2-columns on mobile, cards are small (~160px). Shrink paddings/fonts */
   .product-info {
-    padding: 0.75rem;
+    padding: 0.5rem;
   }
   
   .product-name {
-    font-size: 0.85rem;
-    height: 2.1rem;
-    margin-bottom: 0.25rem;
+    font-size: 0.75rem;
+    height: 1.8rem;
+    margin-bottom: 0.2rem;
   }
   
   .price {
-    font-size: 1rem;
+    font-size: 0.9rem;
   }
   
   .product-rating {
-    font-size: 0.75rem;
-    margin-bottom: 0.5rem;
+    font-size: 0.7rem;
+    margin-bottom: 0.3rem;
   }
   
   .card-buttons {
     flex-direction: column;
-    gap: 0.4rem;
+    gap: 0.2rem;
+    margin-top: 0.3rem;
   }
   
   .add-cart-btn, .buy-now-btn {
-    padding: 0.5rem;
+    padding: 0.4rem;
     font-size: 0.75rem;
   }
   
   .badge-new, .badge-best {
-    padding: 0.15rem 0.5rem;
-    font-size: 0.65rem;
-    top: 0.5rem;
-    left: 0.5rem;
+    padding: 0.15rem 0.4rem;
+    font-size: 0.6rem;
+    top: 0.3rem;
+    left: 0.3rem;
   }
 }

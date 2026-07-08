@@ -99,7 +99,7 @@
 .nav-item {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  justify-content: space-between;
   padding: 1.2rem 1.5rem;
   background: transparent;
   border: none;
@@ -110,6 +110,13 @@
   cursor: pointer;
   transition: all 0.2s ease;
   position: relative;
+  width: 100%;
+}
+
+.nav-item-content {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
 
 .nav-item:hover {
@@ -188,7 +195,7 @@
 .info-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 2.5rem 2rem;
+  gap: 1.5rem;
   margin-top: 1rem;
 }
 
@@ -198,12 +205,10 @@
 }
 
 .info-item label {
-  font-size: 0.8rem;
-  color: #64748b;
-  margin-bottom: 0.5rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
+  font-size: 0.85rem;
+  color: #475569;
+  margin-bottom: 0.4rem;
+  font-weight: 500;
 }
 
 .info-val {
@@ -220,9 +225,9 @@
   border: 1px solid #cbd5e1;
   border-radius: 10px;
   font-family: inherit;
-  font-size: 1rem;
+  font-size: 0.95rem;
   color: #1e293b;
-  background-color: #f8fafc;
+  background-color: #ffffff;
   transition: all 0.25s ease;
   box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.02);
 }
@@ -242,7 +247,55 @@
   box-shadow: none;
 }
 
-/* Avatar Editing */
+/* Profile Cards */
+.profile-card {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  margin-bottom: 1.5rem;
+}
+
+.avatar-card {
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.avatar-card-left {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.avatar-card-info h3 {
+  margin: 0 0 0.25rem 0;
+  font-size: 1.1rem;
+  color: #1e293b;
+}
+
+.avatar-card-info p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.avatar-card-right .btn {
+  border-radius: 8px;
+  padding: 0.5rem 1.5rem;
+}
+
+.form-card {
+  padding: 2rem;
+}
+
+.form-card-title {
+  margin: 0 0 1.5rem 0;
+  font-size: 1.25rem;
+  color: #1e293b;
+}
+
+/* Avatar Editing (Legacy) */
 .avatar-section-wrapper {
   margin-bottom: 2.5rem;
   padding-bottom: 2.5rem;
@@ -310,8 +363,10 @@
   border: 1px solid #e2e8f0;
   border-radius: 12px;
   padding: 1.5rem;
-  position: relative;
   transition: all 0.2s ease;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
 }
 
 .address-card:hover {
@@ -324,10 +379,19 @@
   background: #f8fafc;
 }
 
+.address-content-wrap {
+  flex: 1;
+}
+
+.address-right-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: space-between;
+  height: 100%;
+}
+
 .address-badge {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
   background: #dbeafe;
   color: #1d4ed8;
   font-size: 0.7rem;
@@ -340,8 +404,9 @@
 .address-header {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.75rem;
   margin-bottom: 0.75rem;
+  flex-wrap: wrap;
 }
 
 .address-header h3 {
@@ -371,6 +436,24 @@
   color: #475569;
   font-size: 0.95rem;
   margin-bottom: 1.5rem;
+}
+
+.address-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.address-form-item.full-width {
+  grid-column: 1 / -1;
+}
+
+.address-form-item label {
+  font-size: 0.85rem;
+  color: #475569;
+  margin-bottom: 0.4rem;
+  font-weight: 500;
+  display: block;
 }
 
 .address-actions {
@@ -505,32 +588,69 @@
 
 /* Responsive Styles */
 @media (max-width: 968px) {
+  .profile-page-wrapper {
+    padding: 1rem 0;
+  }
+  
   .profile-layout {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 0;
   }
   
-  .profile-sidebar {
+  /* Mobile Menu State */
+  .profile-layout.mobile-menu .profile-main-content {
+    display: none;
+  }
+  
+  .profile-layout.mobile-menu .profile-sidebar {
+    display: flex;
     width: 100%;
+    border: none;
+    box-shadow: none;
+    background: transparent;
+  }
+
+  /* Mobile Content State */
+  .profile-layout.mobile-content .profile-sidebar {
+    display: none;
+  }
+  
+  .profile-layout.mobile-content .profile-main-content {
+    display: block;
+    border: none;
+    box-shadow: none;
+    min-height: auto;
+  }
+
+  .sidebar-user-brief {
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
   }
 
   .profile-nav-menu {
-    flex-direction: row;
-    overflow-x: auto;
+    flex-direction: column;
     padding: 0;
-    border-bottom: 1px solid #e2e8f0;
+    border: none;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    overflow: hidden;
   }
 
   .nav-item {
-    white-space: nowrap;
-    padding: 1rem;
-    border-bottom: 2px solid transparent;
+    padding: 1.25rem 1rem;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  .nav-item:last-child {
+    border-bottom: none;
   }
 
   .nav-item.active {
     background: transparent;
-    border-bottom: 2px solid var(--primary-color, #2563eb);
+    border-left: none;
   }
   
   .nav-item.active::before {
@@ -538,13 +658,74 @@
   }
 
   .logout-btn {
-    margin-top: 0;
+    margin-top: 1rem;
     border-top: none;
-    border-left: 1px solid #f1f5f9;
+    border-bottom: none;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
   }
   
-  .info-grid, .addresses-list {
+  .info-grid, .addresses-list, .address-form-grid {
     grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .info-item {
+    margin-bottom: 0.5rem;
+  }
+
+  .info-item label {
+    font-size: 0.75rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .info-val {
+    font-size: 1rem;
+    padding: 0.25rem 0;
+  }
+  
+  .form-control {
+    padding: 0.6rem 1rem;
+  }
+
+  .profile-section {
+    padding: 1rem;
+  }
+
+  .address-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .address-right-panel {
+    align-items: flex-start;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e2e8f0;
+    width: 100%;
+  }
+
+  .avatar-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .avatar-card-left {
+    width: 100%;
+  }
+
+  .avatar-card-right {
+    width: 100%;
+  }
+  
+  .avatar-card-right .btn {
+    width: 100%;
+  }
+
+  .form-card {
+    padding: 1.25rem;
   }
 }
 

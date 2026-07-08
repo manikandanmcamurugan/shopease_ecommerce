@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { User, MapPin, Package, Settings, LogOut, Camera, Save, Edit2, Lock, Bell, Shield, Map } from 'lucide-react';
+import { User, MapPin, Package, Settings, LogOut, Camera, Save, Edit2, Lock, Bell, Shield, Map, ChevronRight, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import authService from '../../services/authService';
@@ -17,6 +17,7 @@ const Profile = () => {
   
   // Navigation State
   const [activeTab, setActiveTab] = useState('personal');
+  const [mobileView, setMobileView] = useState('menu');
 
   // Edit Mode States
   const [isEditing, setIsEditing] = useState(false);
@@ -195,95 +196,72 @@ const Profile = () => {
     switch (activeTab) {
       case 'personal':
         return (
-          <section className="profile-section active-section">
-            <div className="section-header-inline">
-              <h2>Personal Information</h2>
-              {!isEditing ? (
-                <button className="btn btn-outline edit-btn" onClick={handleEditToggle}>
-                  <Edit2 size={16} /> Edit
+          <section className="profile-section active-section" style={{ background: 'transparent', padding: 0, boxShadow: 'none', border: 'none' }}>
+            <div className="section-header-inline d-md-none" style={{ background: 'white', padding: '1rem', borderRadius: '12px', marginBottom: '1rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <button className="mobile-back-btn" onClick={() => setMobileView('menu')} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }}>
+                  <ArrowLeft size={20} />
                 </button>
-              ) : (
-                <div className="edit-actions">
-                  <button className="btn btn-outline cancel-btn" onClick={handleEditToggle} disabled={saving}>
-                    Cancel
-                  </button>
-                  <button className="btn btn-primary save-btn" onClick={handleSave} disabled={saving}>
-                    {saving ? 'Saving...' : <><Save size={16} /> Save</>}
-                  </button>
-                </div>
-              )}
+                <h2 style={{ margin: 0, fontSize: '1.2rem' }}>Personal Information</h2>
+              </div>
             </div>
-            
-            <div className="avatar-section-wrapper mb-4">
-              <label className="section-label">Profile Picture</label>
-              <div className="avatar-edit-container mt-2">
-                <div className={`user-avatar large ${isEditing ? 'editable' : ''}`} onClick={() => isEditing && fileInputRef.current?.click()}>
+
+            <div className="profile-card avatar-card">
+              <div className="avatar-card-left">
+                <div className="user-avatar large" style={{ width: '70px', height: '70px', fontSize: '2rem' }}>
                   {displayImage ? (
                     <img src={displayImage} alt="Profile" className="avatar-img" />
                   ) : (
                     displayName.charAt(0).toUpperCase()
                   )}
-                  {isEditing && (
-                    <div className="avatar-overlay">
-                      <Camera size={24} />
-                    </div>
-                  )}
                 </div>
-                {isEditing && (
-                  <div className="avatar-instructions ms-3">
-                    <p className="mb-1">Click the image to upload a new avatar.</p>
-                    <p className="text-muted small">Max file size: 5MB. Formats: JPG, PNG.</p>
-                  </div>
-                )}
+                <div className="avatar-card-info">
+                  <h3>Upload a New Photo</h3>
+                  <p>{selectedImage ? selectedImage.name : 'Profile-pic.jpg'}</p>
+                </div>
               </div>
-              <input type="file" ref={fileInputRef} style={{ display: 'none' }} accept="image/*" onChange={handleFileChange} />
+              <div className="avatar-card-right">
+                <input type="file" ref={fileInputRef} style={{ display: 'none' }} accept="image/*" onChange={handleFileChange} />
+                <button className="btn btn-outline" onClick={() => fileInputRef.current?.click()}>
+                  Update
+                </button>
+              </div>
             </div>
 
-            <div className="info-grid">
-              <div className="info-item">
-                <label>Full Name</label>
-                {isEditing ? (
-                  <input type="text" name="name" className="form-control" value={editForm.name} onChange={handleInputChange} />
-                ) : (
-                  <div className="info-val">{displayName}</div>
-                )}
+            <div className="profile-card form-card">
+              <h3 className="form-card-title">Change User Information here</h3>
+              
+              <div className="info-grid">
+                <div className="info-item">
+                  <label>Full Name*</label>
+                  <input type="text" name="name" className="form-control" value={editForm.name || displayName} onChange={handleInputChange} />
+                </div>
+                <div className="info-item">
+                  <label>Email Address*</label>
+                  <input type="email" name="email" className="form-control" value={editForm.email || displayEmail} onChange={handleInputChange} disabled />
+                </div>
+                <div className="info-item" style={{ gridColumn: '1 / -1' }}>
+                  <label>Address*</label>
+                  <input type="text" name="address" className="form-control" value={editForm.address || displayAddress} onChange={handleInputChange} />
+                </div>
+                <div className="info-item">
+                  <label>City</label>
+                  <input type="text" name="city" className="form-control" placeholder="City" />
+                </div>
+                <div className="info-item">
+                  <label>State/Province</label>
+                  <input type="text" name="state" className="form-control" placeholder="State" />
+                </div>
+                <div className="info-item">
+                  <label>Zip Code</label>
+                  <input type="text" name="zip" className="form-control" placeholder="Zip Code" />
+                </div>
               </div>
-              <div className="info-item">
-                <label>Email Address</label>
-                {isEditing ? (
-                  <input type="email" name="email" className="form-control" value={editForm.email} onChange={handleInputChange} disabled />
-                ) : (
-                  <div className="info-val">{displayEmail}</div>
-                )}
-              </div>
-              <div className="info-item">
-                <label>Mobile Number</label>
-                {isEditing ? (
-                  <input type="tel" name="phone" className="form-control" value={editForm.phone} onChange={handleInputChange} />
-                ) : (
-                  <div className="info-val">{displayPhone}</div>
-                )}
-              </div>
-              <div className="info-item">
-                <label>Date of Birth</label>
-                {isEditing ? (
-                  <input type="date" name="dob" className="form-control" value={editForm.dob} onChange={handleInputChange} />
-                ) : (
-                  <div className="info-val">{displayDob}</div>
-                )}
-              </div>
-              <div className="info-item">
-                <label>Gender</label>
-                {isEditing ? (
-                  <select name="gender" className="form-control" value={editForm.gender} onChange={handleInputChange}>
-                    <option value="">Select Gender</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Other">Other</option>
-                  </select>
-                ) : (
-                  <div className="info-val">{displayGender}</div>
-                )}
+
+              <div style={{ marginTop: '2rem' }}>
+                <button className="btn btn-primary" style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', fontWeight: '600' }} onClick={handleSave} disabled={saving}>
+                  {saving ? 'Updating...' : 'Update Information'}
+                </button>
               </div>
             </div>
           </section>
@@ -293,7 +271,12 @@ const Profile = () => {
         return (
           <section className="profile-section active-section">
             <div className="section-header-inline">
-              <h2>Manage Addresses</h2>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <button className="mobile-back-btn d-md-none" onClick={() => setMobileView('menu')} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }}>
+                  <ArrowLeft size={20} />
+                </button>
+                <h2>Manage Addresses</h2>
+              </div>
               {!showAddressForm && (
                 <button className="btn btn-primary btn-sm" onClick={() => setShowAddressForm(true)}>
                   <Map size={16} /> Add New
@@ -304,23 +287,21 @@ const Profile = () => {
             {showAddressForm && (
               <div className="password-form-container mt-4 mb-4 pt-3 border-top w-100">
                 <h4 className="mb-3">Add New Address</h4>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem', marginBottom: '1rem' }}>
-                  <div>
-                    <label style={{ fontSize: '0.85rem', fontWeight: '500', marginBottom: '0.25rem', display: 'block' }}>Street Address</label>
+                <div className="address-form-grid">
+                  <div className="address-form-item full-width">
+                    <label>Street Address</label>
                     <input type="text" name="street" value={newAddressForm.street} onChange={handleNewAddressChange} className="form-control" placeholder="123 Main St" />
                   </div>
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
-                  <div>
-                    <label style={{ fontSize: '0.85rem', fontWeight: '500', marginBottom: '0.25rem', display: 'block' }}>City</label>
+                  <div className="address-form-item">
+                    <label>City</label>
                     <input type="text" name="city" value={newAddressForm.city} onChange={handleNewAddressChange} className="form-control" placeholder="New York" />
                   </div>
-                  <div>
-                    <label style={{ fontSize: '0.85rem', fontWeight: '500', marginBottom: '0.25rem', display: 'block' }}>Zip Code</label>
+                  <div className="address-form-item">
+                    <label>Zip Code</label>
                     <input type="text" name="zip" value={newAddressForm.zip} onChange={handleNewAddressChange} className="form-control" placeholder="10001" />
                   </div>
                 </div>
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
                   <button className="btn btn-primary btn-sm" onClick={handleSaveNewAddress} disabled={saving}>
                     {saving ? 'Saving...' : 'Save Address'}
                   </button>
@@ -334,16 +315,21 @@ const Profile = () => {
             {!showAddressForm && (
               <div className="addresses-list">
                 <div className="address-card default">
-                  <div className="address-badge">Default</div>
-                  <div className="address-header">
-                    <h3>{displayName}</h3>
-                    <span className="address-type">Home</span>
+                  <div className="address-content-wrap">
+                    <div className="address-header">
+                      <h3>{displayName}</h3>
+                      <span className="address-type">Home</span>
+                      <span className="address-badge d-md-none">Default</span>
+                    </div>
+                    <p className="address-body">{displayAddress}</p>
+                    <p className="address-phone"><span className="fw-bold">Phone:</span> {displayPhone}</p>
                   </div>
-                  <p className="address-body">{displayAddress}</p>
-                  <p className="address-phone"><span className="fw-bold">Phone:</span> {displayPhone}</p>
-                  <div className="address-actions">
-                    <button className="btn-link" onClick={() => setShowAddressForm(true)}>Edit</button>
-                    <button className="btn-link text-danger" onClick={() => addToast('Cannot remove default address', 'error')}>Remove</button>
+                  <div className="address-right-panel">
+                    <span className="address-badge d-none d-md-block mb-3 text-center">Default</span>
+                    <div className="address-actions">
+                      <button className="btn-link" onClick={() => setShowAddressForm(true)}>Edit</button>
+                      <button className="btn-link text-danger" onClick={() => addToast('Cannot remove default address', 'error')}>Remove</button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -355,7 +341,12 @@ const Profile = () => {
         return (
           <section className="profile-section active-section">
             <div className="section-header-inline">
-              <h2>Order History</h2>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <button className="mobile-back-btn d-md-none" onClick={() => setMobileView('menu')} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }}>
+                  <ArrowLeft size={20} />
+                </button>
+                <h2>Order History</h2>
+              </div>
             </div>
             {orders.length === 0 ? (
               <div className="empty-state text-center py-5">
@@ -389,22 +380,23 @@ const Profile = () => {
         return (
           <section className="profile-section active-section">
             <div className="section-header-inline">
-              <h2>Account Settings</h2>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <button className="mobile-back-btn d-md-none" onClick={() => setMobileView('menu')} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }}>
+                  <ArrowLeft size={20} />
+                </button>
+                <h2>Account Settings</h2>
+              </div>
             </div>
             <div className="settings-grid">
               <div className="settings-card" style={showPasswordForm ? { gridColumn: '1 / -1', flexDirection: 'column' } : {}}>
                 <div style={{ display: 'flex', width: '100%', gap: '1rem' }}>
                   <div className="settings-icon-wrapper bg-blue-100 text-blue-600"><Lock size={24} /></div>
                   <div className="settings-content" style={{ flex: 1 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div>
-                        <h3>Change Password</h3>
-                        <p>Update your password to keep your account secure.</p>
-                      </div>
-                      {!showPasswordForm && (
-                        <button className="btn btn-outline btn-sm mt-3" onClick={() => setShowPasswordForm(true)}>Update Password</button>
-                      )}
-                    </div>
+                    <h3>Change Password</h3>
+                    <p>Update your password to keep your account secure.</p>
+                    {!showPasswordForm && (
+                      <button className="btn btn-outline btn-sm mt-3" onClick={() => setShowPasswordForm(true)}>Update Password</button>
+                    )}
                   </div>
                 </div>
                 
@@ -468,9 +460,9 @@ const Profile = () => {
   return (
     <div className="profile-page-wrapper">
       <div className="profile-page container">
-        <h1 className="page-title gradient-text-subtle">My Account</h1>
+        <h1 className="page-title gradient-text-subtle d-none d-md-block">My Account</h1>
         
-        <div className="profile-layout">
+        <div className={`profile-layout mobile-${mobileView}`}>
           {/* Sidebar Navigation */}
           <aside className="profile-sidebar">
             <div className="sidebar-user-brief">
@@ -484,24 +476,29 @@ const Profile = () => {
               <div className="brief-info">
                 <span className="greeting">Hello,</span>
                 <span className="brief-name">{displayName}</span>
+                <span className="brief-email" style={{ fontSize: '0.8rem', color: '#64748b' }}>{displayEmail}</span>
               </div>
             </div>
             
             <nav className="profile-nav-menu">
-              <button className={`nav-item ${activeTab === 'personal' ? 'active' : ''}`} onClick={() => setActiveTab('personal')}>
-                <User size={20} /> <span>Profile Information</span>
+              <button className={`nav-item ${activeTab === 'personal' ? 'active' : ''}`} onClick={() => { setActiveTab('personal'); setMobileView('content'); }}>
+                <div className="nav-item-content"><User size={20} /> <span>Profile Information</span></div>
+                <ChevronRight size={18} className="nav-chevron d-md-none" />
               </button>
-              <button className={`nav-item ${activeTab === 'addresses' ? 'active' : ''}`} onClick={() => setActiveTab('addresses')}>
-                <MapPin size={20} /> <span>Manage Addresses</span>
+              <button className={`nav-item ${activeTab === 'addresses' ? 'active' : ''}`} onClick={() => { setActiveTab('addresses'); setMobileView('content'); }}>
+                <div className="nav-item-content"><MapPin size={20} /> <span>Manage Addresses</span></div>
+                <ChevronRight size={18} className="nav-chevron d-md-none" />
               </button>
-              <button className={`nav-item ${activeTab === 'orders' ? 'active' : ''}`} onClick={() => setActiveTab('orders')}>
-                <Package size={20} /> <span>My Orders</span>
+              <button className={`nav-item ${activeTab === 'orders' ? 'active' : ''}`} onClick={() => { setActiveTab('orders'); setMobileView('content'); }}>
+                <div className="nav-item-content"><Package size={20} /> <span>My Orders</span></div>
+                <ChevronRight size={18} className="nav-chevron d-md-none" />
               </button>
-              <button className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => setActiveTab('settings')}>
-                <Settings size={20} /> <span>Account Settings</span>
+              <button className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => { setActiveTab('settings'); setMobileView('content'); }}>
+                <div className="nav-item-content"><Settings size={20} /> <span>Account Settings</span></div>
+                <ChevronRight size={18} className="nav-chevron d-md-none" />
               </button>
               <button className="nav-item text-danger mt-4 logout-btn" onClick={logout}>
-                <LogOut size={20} /> <span>Logout</span>
+                <div className="nav-item-content"><LogOut size={20} /> <span>Logout</span></div>
               </button>
             </nav>
           </aside>

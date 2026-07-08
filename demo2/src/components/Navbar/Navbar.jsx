@@ -21,6 +21,8 @@ const Navbar = () => {
     }
   };
 
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
+
   return (
     <nav className="navbar">
       <div className="container nav-container">
@@ -33,17 +35,23 @@ const Navbar = () => {
           {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
 
-        {/* Desktop Search Bar */}
-        <div className="nav-search">
+        {/* Desktop & Mobile Search Bar */}
+        <div className={`nav-search ${showMobileSearch ? 'mobile-visible' : ''}`}>
           <SearchBar onSearchSubmit={handleSearch} />
         </div>
-
         <ul className={`nav-links ${isMenuOpen ? 'active' : ''}`}>
-          <li><Link to="/" onClick={() => setIsMenuOpen(false)}>Home</Link></li>
-          <li><Link to="/products" onClick={() => setIsMenuOpen(false)}>Products</Link></li>
-          <li><Link to="/about" onClick={() => setIsMenuOpen(false)}>About Us</Link></li>
-          <li><Link to="/contact" onClick={() => setIsMenuOpen(false)}>Contact</Link></li>
-          
+          <li className="nav-text-link"><Link to="/" onClick={() => setIsMenuOpen(false)}>Home</Link></li>
+          <li className="nav-text-link"><Link to="/products" onClick={() => setIsMenuOpen(false)}>Products</Link></li>
+          <li className="nav-text-link"><Link to="/about" onClick={() => setIsMenuOpen(false)}>About Us</Link></li>
+          <li className="nav-text-link"><Link to="/contact" onClick={() => setIsMenuOpen(false)}>Contact</Link></li>
+
+          {/* Mobile Search Icon */}
+          <li className="nav-icon-link mobile-search-btn">
+            <button onClick={() => setShowMobileSearch(!showMobileSearch)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+              {showMobileSearch ? <X size={22} color="var(--text-main)" /> : <Search size={22} color="var(--text-main)" />}
+            </button>
+          </li>
+
           <li className="nav-icon-link">
             <Link to="/wishlist" onClick={() => setIsMenuOpen(false)} id="nav-wishlist-icon">
               <Heart size={22} />
@@ -73,6 +81,7 @@ const Navbar = () => {
                     <span className="nav-greeting">Hi! {user?.name || user?.username || 'User'}</span>
                   </div>
                 </div>
+                <div className="nav-divider"></div>
                 <button onClick={() => { logout(); setIsMenuOpen(false); }} className="logout-btn">Logout</button>
               </div>
             ) : (

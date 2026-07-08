@@ -1,51 +1,47 @@
 .category-card {
-  display: block;
-  border-radius: var(--radius);
-  overflow: hidden;
-  height: 250px;
-  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
 }
 
 .category-image {
-  width: 100%;
-  height: 100%;
-  position: relative;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  background: var(--bg-light);
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
 }
 
 .category-image img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.5s ease;
 }
 
-.category-card:hover .category-image img {
-  transform: scale(1.1);
+.category-card:hover .category-image {
+  border-color: var(--primary);
+  transform: scale(1.05);
 }
 
-.category-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 60%);
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  padding: 1.5rem;
-  color: white;
-  transition: background 0.3s;
+.category-title h3 {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-main);
+  text-align: center;
+  margin: 0;
 }
 
-.category-card:hover .category-overlay {
-  background: linear-gradient(to top, rgba(37, 99, 235, 0.7) 0%, rgba(0,0,0,0) 60%);
-}
-
-.category-overlay h3 {
-  font-size: 1.5rem;
-  margin-bottom: 0.25rem;
-}
-
-.category-overlay span {
-  font-size: 0.9rem;
-  font-weight: 500;
-  opacity: 0.8;
+@media (min-width: 768px) {
+  .category-image {
+    width: 120px;
+    height: 120px;
+  }
+  .category-title h3 {
+    font-size: 1rem;
+  }
 }

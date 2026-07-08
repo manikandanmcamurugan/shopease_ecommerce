@@ -141,10 +141,36 @@ const Checkout = () => {
 
   return (
     <div className="checkout-page container">
-      <div className="checkout-steps">
-        <div className={`step ${step >= 1 ? 'active' : ''}`}>1. Shipping</div>
-        <div className={`step ${step >= 2 ? 'active' : ''}`}>2. Payment</div>
-        <div className={`step ${step >= 3 ? 'active' : ''}`}>3. Completion</div>
+      <div className="checkout-steps-modern">
+        <div className={`modern-step ${step >= 1 ? 'active' : ''}`}>
+          <div className="step-circle-wrap">
+            <div className="step-circle">01</div>
+          </div>
+          <div className="step-content">
+            <h4>Shipping</h4>
+            <p>Enter your shipping address</p>
+          </div>
+        </div>
+        <div className="step-connector"></div>
+        <div className={`modern-step ${step >= 2 ? 'active' : ''}`}>
+          <div className="step-circle-wrap">
+            <div className="step-circle">02</div>
+          </div>
+          <div className="step-content">
+            <h4>Payment</h4>
+            <p>Select payment method</p>
+          </div>
+        </div>
+        <div className="step-connector"></div>
+        <div className={`modern-step ${step >= 3 ? 'active' : ''}`}>
+          <div className="step-circle-wrap">
+            <div className="step-circle">03</div>
+          </div>
+          <div className="step-content">
+            <h4>Completion</h4>
+            <p>Order successful</p>
+          </div>
+        </div>
       </div>
 
       {step === 1 && (

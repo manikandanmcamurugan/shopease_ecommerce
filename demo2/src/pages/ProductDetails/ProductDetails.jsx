@@ -306,18 +306,12 @@ const ProductDetails = () => {
         <section className="related-section">
           <div className="section-header-inline" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
             <h2 style={{ marginBottom: 0 }}>Related Products</h2>
-            <div className="carousel-nav-arrows" style={{ display: 'flex', gap: '0.5rem' }}>
-              <button 
-                onClick={() => scrollCarousel('left')} 
-                style={{ width: '40px', height: '40px', borderRadius: '50%', border: '1px solid var(--border)', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-              >
-                <ChevronLeft size={20} />
+            <div style={{ display: 'flex', gap: '0.5rem' }} className="d-none d-md-flex">
+              <button onClick={() => scrollCarousel('left')} className="carousel-nav-btn-small">
+                <ChevronLeft size={18} />
               </button>
-              <button 
-                onClick={() => scrollCarousel('right')}
-                style={{ width: '40px', height: '40px', borderRadius: '50%', border: '1px solid var(--border)', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-              >
-                <ChevronRight size={20} />
+              <button onClick={() => scrollCarousel('right')} className="carousel-nav-btn-small">
+                <ChevronRight size={18} />
               </button>
             </div>
           </div>
@@ -337,18 +331,12 @@ const ProductDetails = () => {
         <section className="related-section" style={{ paddingTop: '2rem', borderTop: 'none' }}>
           <div className="section-header-inline" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
             <h2 style={{ marginBottom: 0 }}>You May Also Like</h2>
-            <div className="carousel-nav-arrows" style={{ display: 'flex', gap: '0.5rem' }}>
-              <button 
-                onClick={() => scrollRecommendedCarousel('left')} 
-                style={{ width: '40px', height: '40px', borderRadius: '50%', border: '1px solid var(--border)', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-              >
-                <ChevronLeft size={20} />
+            <div style={{ display: 'flex', gap: '0.5rem' }} className="d-none d-md-flex">
+              <button onClick={() => scrollRecommendedCarousel('left')} className="carousel-nav-btn-small">
+                <ChevronLeft size={18} />
               </button>
-              <button 
-                onClick={() => scrollRecommendedCarousel('right')}
-                style={{ width: '40px', height: '40px', borderRadius: '50%', border: '1px solid var(--border)', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-              >
-                <ChevronRight size={20} />
+              <button onClick={() => scrollRecommendedCarousel('right')} className="carousel-nav-btn-small">
+                <ChevronRight size={18} />
               </button>
             </div>
           </div>
