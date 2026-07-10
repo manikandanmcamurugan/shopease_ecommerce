@@ -22,6 +22,25 @@
   --font-heading: 'Outfit', sans-serif;
   
   --nav-height: 70px;
+
+  /* Typography System (Responsive) */
+  --font-hero-title: clamp(26px, 6vw, 64px);
+  --font-hero-sub: clamp(14px, 3vw, 20px);
+  --font-heading: clamp(18px, 4.5vw, 20px);
+  --font-prod-name: clamp(14px, 3.5vw, 15px);
+  --font-prod-price: clamp(16px, 4vw, 18px);
+  --font-prod-old-price: clamp(13px, 3.2vw, 14px);
+  --font-badge: clamp(11px, 2.8vw, 12px);
+  --font-rating: clamp(12px, 3vw, 13px);
+  --font-btn: clamp(14px, 3.5vw, 15px);
+  --font-nav: clamp(14px, 3.5vw, 15px);
+  --font-category: clamp(13px, 3.2vw, 14px);
+  --font-footer-head: 16px;
+  --font-footer-link: clamp(13px, 3.2vw, 14px);
+  --font-form-label: 14px;
+  --font-input: clamp(14px, 3.5vw, 15px);
+  --font-error: 12px;
+  --font-p: clamp(14px, 3.5vw, 15px);
 }
 
 * {
@@ -60,7 +79,7 @@ body {
   background-color: var(--background);
   color: var(--text-main);
   line-height: 1.5;
-  font-size: medium;
+  font-size: var(--font-p);
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -120,6 +139,8 @@ img {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
+  font-size: var(--font-btn);
+  min-height: 44px; /* Touch target size */
 }
 
 .btn-primary {
@@ -141,12 +162,6 @@ img {
   scroll-behavior: smooth;
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
-}
-
-@media (max-width: 575px) {
-  .product-carousel-track {
-    gap: 2px;
-  }
 }
 
 .product-carousel-track::-webkit-scrollbar {
@@ -180,15 +195,11 @@ img {
 
 @media (max-width: 768px) {
   .product-carousel-item {
-    flex: 0 0 calc(50% - 0.75rem);
-    min-width: 220px;
+    flex: 0 0 calc(50% - 1.5vw); /* exactly half screen width minus gap */
+    min-width: 0; /* remove static limit to allow perfect scaling */
   }
-}
-
-@media (max-width: 576px) {
-  .product-carousel-item {
-    flex: 0 0 calc(50% - 1px); /* 2 items per row with 2px gap (1px each) */
-    min-width: 140px; /* matched to mobile grid minmax */
+  .product-carousel-track {
+    gap: 3vw;
   }
 }
 
@@ -211,41 +222,39 @@ img {
 
 .grid {
   display: grid;
-  gap: 0.5rem; /* much smaller gap on mobile for compact view */
+  gap: 1.5rem;
 }
 
-/* Mobile grids (up to 575px) */
-@media (max-width: 575px) {
+/* Mobile grids (up to 768px for fluid scaling) */
+@media (max-width: 768px) {
   .grid {
-    gap: 0;
-    justify-content: flex-start;
+    gap: 3vw !important; /* ensure fluid gap applies */
+    width: 100%;
   }
   .grid-2, .grid-3, .grid-4 {
-    grid-template-columns: repeat(2, 159px); /* strictly force 2 columns on mobile */
+    grid-template-columns: repeat(2, 1fr) !important;
   }
-}
-
-/* Tablet / Large Phone: 2 columns */
-@media (min-width: 576px) {
-  .grid { gap: 1.5rem; }
-  .grid-2, .grid-3, .grid-4 { grid-template-columns: repeat(2, 1fr); }
 }
 
 /* Tablet Landscape / Small Desktop: 3 columns */
-@media (min-width: 768px) {
+@media (min-width: 769px) and (max-width: 1023px) {
   .grid { gap: 2rem; }
-  .grid-3 { grid-template-columns: repeat(3, 1fr); }
-  .grid-4 { grid-template-columns: repeat(3, 1fr); }
+  .grid-2 { grid-template-columns: repeat(2, 1fr); }
+  .grid-3, .grid-4 { grid-template-columns: repeat(3, 1fr); }
 }
 
 /* Desktop: 4 columns */
-@media (min-width: 1024px) {
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .grid { gap: 2rem; }
+  .grid-2 { grid-template-columns: repeat(2, 1fr); }
   .grid-3 { grid-template-columns: repeat(4, 1fr); }
   .grid-4 { grid-template-columns: repeat(4, 1fr); }
 }
 
 /* Large Desktop: 5 columns */
 @media (min-width: 1280px) {
+  .grid { gap: 2rem; }
+  .grid-2 { grid-template-columns: repeat(2, 1fr); }
   .grid-3 { grid-template-columns: repeat(5, 1fr); }
   .grid-4 { grid-template-columns: repeat(5, 1fr); }
 }
@@ -259,7 +268,7 @@ img {
   display: block;
   margin-bottom: 0.5rem;
   font-weight: 500;
-  font-size: 0.9rem;
+  font-size: var(--font-form-label, 14px);
 }
 
 .form-control {
@@ -268,6 +277,8 @@ img {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   font-family: inherit;
+  font-size: var(--font-input, 14px);
+  min-height: 44px; /* Touch accessible height */
   transition: border-color 0.2s;
 }
 

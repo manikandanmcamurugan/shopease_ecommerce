@@ -21,7 +21,7 @@ const Products = () => {
   const [showOffersOnly, setShowOffersOnly] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
-  const itemsPerPage = 8;
+  const [itemsPerPage, setItemsPerPage] = useState(5);
 
   // Add state for mobile collapsible filters
   const [expandedFilters, setExpandedFilters] = useState({
@@ -359,6 +359,8 @@ const Products = () => {
             currentPage={currentPage}
             totalPages={totalPages}
             onPageChange={setCurrentPage}
+            itemsPerPage={itemsPerPage}
+            onItemsPerPageChange={setItemsPerPage}
           />
         </main>
       </div>

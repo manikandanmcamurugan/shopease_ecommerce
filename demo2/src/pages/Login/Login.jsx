@@ -157,7 +157,9 @@ const Login = () => {
         }
 
         updateAuthContext(user);
-        const from = location.state?.from?.pathname || '/profile';
+        const returnUrl = sessionStorage.getItem('returnUrl');
+        if (returnUrl) sessionStorage.removeItem('returnUrl');
+        const from = returnUrl || location.state?.from?.pathname || '/';
         navigate(from, { state: location.state?.from?.state, replace: true });
       } else {
         await authService.register({

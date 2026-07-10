@@ -1,36 +1,125 @@
-.pagination {
+.pagination-wrapper {
   display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
   justify-content: center;
   align-items: center;
-  gap: 0.5rem;
+  gap: 1.5rem;
   margin-top: 3rem;
 }
 
-.page-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius);
+.pagination-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.page-nav-btn {
+  background: white;
   border: 1px solid var(--border);
-  background: var(--white);
+  border-radius: 20px;
+  padding: 0.5rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-weight: 500;
   color: var(--text-main);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: all 0.2s;
+  min-height: 40px;
+}
+
+.page-nav-btn:hover:not(:disabled) {
+  background-color: var(--background);
+}
+
+.page-nav-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.page-numbers-pill {
+  display: flex;
+  background-color: #e5e5e5;
+  border-radius: 20px;
+  padding: 0.25rem;
+  gap: 0.1rem;
+}
+
+.page-btn {
+  background: transparent;
+  border: none;
+  min-width: 34px;
+  height: 34px;
+  border-radius: 17px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 600;
-}
-
-.page-btn:hover:not(:disabled) {
-  border-color: var(--primary);
-  color: var(--primary);
+  font-weight: 500;
+  color: var(--text-main);
+  cursor: pointer;
+  padding: 0 0.5rem;
+  transition: all 0.2s;
 }
 
 .page-btn.active {
-  background-color: var(--primary);
+  background-color: #222;
   color: white;
-  border-color: var(--primary);
 }
 
-.page-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+.page-btn:not(.active):not(.dots):hover {
+  background-color: rgba(0,0,0,0.05);
+}
+
+.page-btn.dots {
+  cursor: default;
+}
+
+.rows-per-page-container {
+  display: flex;
+  justify-content: center;
+}
+
+.rows-pill {
+  display: flex;
+  background-color: #e5e5e5;
+  border-radius: 20px;
+  padding: 0.25rem;
+  gap: 0.25rem;
+  align-items: center;
+}
+
+.row-btn {
+  background: transparent;
+  border: none;
+  min-width: 40px;
+  height: 36px;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+  color: var(--text-main);
+  cursor: pointer;
+  padding: 0 0.75rem;
+  transition: all 0.2s;
+}
+
+.row-btn.active {
+  background-color: white;
+  box-shadow: var(--shadow-sm);
+}
+
+.row-btn:not(.active):hover {
+  background-color: rgba(0,0,0,0.05);
+}
+
+@media (max-width: 575px) {
+  .page-nav-btn span {
+    display: none; /* Hide text on small screens */
+  }
+  .page-nav-btn {
+    padding: 0.5rem;
+  }
 }

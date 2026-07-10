@@ -70,7 +70,8 @@
 }
 
 .banner-content {
-  max-width: 600px;
+  width: 100%;
+  max-width: max(50%, 600px);
   padding: 0 1rem;
 }
 
@@ -96,14 +97,14 @@
 
 .banner-subtitle {
   color: #fff;
-  font-size: 0.875rem;
+  font-size: var(--font-hero-sub, 0.875rem);
   font-weight: 600;
   letter-spacing: 1px;
   text-transform: uppercase;
 }
 
 .banner-content h1 {
-  font-size: clamp(3rem, 5vw, 4.5rem);
+  font-size: var(--font-hero-title, clamp(3.5rem, 6vw, 5.5rem));
   line-height: 1.1;
   font-weight: 800;
   color: #fff;
@@ -127,7 +128,7 @@
 }
 
 .banner-content p {
-  font-size: 1.125rem;
+  font-size: var(--font-p, 1.125rem);
   color: rgba(255, 255, 255, 0.8);
   margin-bottom: 3rem;
   line-height: 1.6;

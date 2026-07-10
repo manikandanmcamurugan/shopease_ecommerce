@@ -20,20 +20,26 @@ import PrivacyPolicy from '../pages/PrivacyPolicy/PrivacyPolicy';
 import TermsConditions from '../pages/TermsConditions/TermsConditions';
 import Careers from '../pages/Careers/Careers';
 import { useAuth } from '../context/AuthContext';
+import AuthActionExecutor from '../components/AuthActionExecutor/AuthActionExecutor';
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
   const location = useLocation();
   if (loading) return null;
-  if (!user) return <Navigate to="/login" state={{ from: location }} replace />;
+  if (!user) {
+    sessionStorage.setItem('returnUrl', location.pathname);
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
   return children;
 };
 
 const AppRoutes = () => {
   return (
-    <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/products" element={<Products />} />
+    <>
+      <AuthActionExecutor />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/products" element={<Products />} />
       <Route path="/about" element={<About />} />
       <Route path="/contact" element={<Contact />} />
       <Route path="/faq" element={<FAQ />} />
@@ -67,7 +73,8 @@ const AppRoutes = () => {
       } />
       
       <Route path="*" element={<NotFound />} />
-    </Routes>
+      </Routes>
+    </>
   );
 };
 

@@ -80,7 +80,12 @@ export const CartProvider = ({ children }) => {
 
   const addToCart = async (product, quantity = 1, event = null) => {
     if (!user) {
-      window.dispatchEvent(new CustomEvent('triggerLoginPrompt'));
+      window.dispatchEvent(new CustomEvent('triggerLoginRedirect', {
+        detail: {
+          returnUrl: window.location.pathname,
+          action: { type: 'ADD_TO_CART', payload: { product, quantity } }
+        }
+      }));
       return;
     }
     if (event) {
@@ -109,7 +114,11 @@ export const CartProvider = ({ children }) => {
 
   const removeFromCart = async (itemId) => {
     if (!user) {
-      window.dispatchEvent(new CustomEvent('triggerLoginPrompt'));
+      window.dispatchEvent(new CustomEvent('triggerLoginRedirect', {
+        detail: {
+          returnUrl: window.location.pathname
+        }
+      }));
       return;
     }
     
@@ -130,7 +139,11 @@ export const CartProvider = ({ children }) => {
 
   const updateQuantity = async (itemId, quantity) => {
     if (!user) {
-      window.dispatchEvent(new CustomEvent('triggerLoginPrompt'));
+      window.dispatchEvent(new CustomEvent('triggerLoginRedirect', {
+        detail: {
+          returnUrl: window.location.pathname
+        }
+      }));
       return;
     }
     if (quantity < 1) return;

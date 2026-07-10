@@ -64,13 +64,18 @@
 .action-btn {
   background-color: var(--white);
   color: var(--text-main);
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: var(--shadow);
+}
+
+.action-btn svg {
+  width: 18px;
+  height: 18px;
 }
 
 .action-btn:hover {
@@ -209,8 +214,13 @@
 
 @media (max-width: 768px) {
   .action-btn {
-    width: 36px;
-    height: 36px;
+    width: 26px;
+    height: 26px;
+  }
+  
+  .action-btn svg {
+    width: 14px;
+    height: 14px;
   }
   
   /* Ensure actions are always visible on touch screens since there's no hover */
@@ -220,53 +230,85 @@
   }
 }
 
-@media (max-width: 575px) {
+@media (max-width: 768px) {
+  .product-card {
+    width: 100%;
+    height: auto; 
+    min-height: auto;
+    max-height: none;  
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+  
+  .product-image {
+    height: auto;
+    aspect-ratio: 1/1;
+  }
+  
   .product-info {
-    padding: 0.4rem;
+    padding: clamp(0.5rem, 3vw, 0.75rem);
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    flex: 1;
   }
   
   .product-category {
-    font-size: 0.65rem;
-    margin-bottom: 0.2rem;
+    font-size: var(--font-category);
+    margin-bottom: 0.25rem;
   }
   
   .product-name {
-    font-size: 0.75rem;
+    font-size: var(--font-prod-name);
     line-height: 1.2;
-    height: 1.8rem;
-    margin-bottom: 0.2rem;
+    margin-bottom: 0.35rem;
     -webkit-line-clamp: 2;
   }
   
   .price {
-    font-size: 0.85rem;
+    font-size: var(--font-prod-price);
   }
   
   .product-rating {
-    font-size: 0.65rem;
-    margin-bottom: 0.2rem;
+    font-size: var(--font-rating);
+    margin-bottom: 0.5rem;
   }
   
   .product-price {
-    gap: 0.2rem;
+    gap: 0.25rem;
+    margin-top: auto;
   }
   
   .card-buttons {
     flex-direction: column;
-    gap: 0.2rem;
-    margin-top: 0.2rem;
+    gap: 0.35rem;
+    margin-top: 0.5rem;
   }
   
   .add-cart-btn, .buy-now-btn {
-    padding: 0.35rem 0.2rem;
-    font-size: 0.7rem;
-    line-height: 1;
+    padding: 0.4rem 0.5rem;
+    font-size: var(--font-btn);
+    line-height: 1.2;
+    min-height: 44px; /* Accessible touch target */
   }
   
   .badge-new, .badge-best {
-    padding: 0.15rem 0.3rem;
-    font-size: 0.55rem;
-    top: 0.3rem;
-    left: 0.3rem;
+    padding: 0.2rem 0.5rem;
+    font-size: var(--font-badge);
+    top: 0.5rem;
+    left: 0.5rem;
+  }
+  
+  .action-btn {
+    width: 44px; /* Accessible touch target */
+    height: 44px;
+  }
+  
+  .product-actions {
+    right: 0.5rem;
+    top: 0.5rem;
   }
 }

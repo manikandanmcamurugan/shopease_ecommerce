@@ -33,7 +33,12 @@ export const WishlistProvider = ({ children }) => {
 
   const addToWishlist = (product, event = null) => {
     if (!user) {
-      window.dispatchEvent(new CustomEvent('triggerLoginPrompt'));
+      window.dispatchEvent(new CustomEvent('triggerLoginRedirect', {
+        detail: {
+          returnUrl: window.location.pathname,
+          action: { type: 'ADD_TO_WISHLIST', payload: { product } }
+        }
+      }));
       return;
     }
     if (event) {
@@ -54,7 +59,11 @@ export const WishlistProvider = ({ children }) => {
 
   const removeFromWishlist = (productOrId) => {
     if (!user) {
-      window.dispatchEvent(new CustomEvent('triggerLoginPrompt'));
+      window.dispatchEvent(new CustomEvent('triggerLoginRedirect', {
+        detail: {
+          returnUrl: window.location.pathname
+        }
+      }));
       return;
     }
     const id = typeof productOrId === 'object' ? productOrId.id : productOrId;
@@ -73,7 +82,12 @@ export const WishlistProvider = ({ children }) => {
 
   const toggleWishlist = (product, event = null) => {
     if (!user) {
-      window.dispatchEvent(new CustomEvent('triggerLoginPrompt'));
+      window.dispatchEvent(new CustomEvent('triggerLoginRedirect', {
+        detail: {
+          returnUrl: window.location.pathname,
+          action: { type: 'ADD_TO_WISHLIST', payload: { product } }
+        }
+      }));
       return;
     }
     if (isInWishlist(product.id)) {

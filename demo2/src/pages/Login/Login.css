@@ -127,7 +127,7 @@
 
 .field-error {
   color: #ad2f2fd6;
-  font-size: 0.8rem;
+  font-size: var(--font-error, 12px);
   margin-top: 0.25rem;
   display: block;
 }

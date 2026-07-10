@@ -23,7 +23,7 @@
 }
 
 .bottom-nav-item span {
-  font-size: 0.75rem;
+  font-size: var(--font-nav);
   font-weight: 500;
 }
 

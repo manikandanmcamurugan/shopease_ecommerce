@@ -8,6 +8,113 @@ import Loader from '../../components/Loader/Loader';
 import Brands from '../../components/Brands/Brands';
 import './Home.css';
 
+const staticBestSellers = [
+  {
+    id: 'static-bs-1',
+    name: 'Wireless Noise-Cancelling Headphones',
+    price: 299.99,
+    category: 'Electronics',
+    brand: 'Sony',
+    image: 'https://images.unsplash.com/photo-1618366712010-f4ae9c647dcb?auto=format&fit=crop&q=80&w=400',
+    rating: 4.8,
+    reviews: 1245,
+    discount: 15,
+    hasOffer: true,
+    isBestSeller: true
+  },
+  {
+    id: 'static-bs-2',
+    name: 'Smart Fitness Watch Series 7',
+    price: 399.00,
+    category: 'Electronics',
+    brand: 'Apple',
+    image: 'https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&q=80&w=400',
+    rating: 4.9,
+    reviews: 3421,
+    discount: 0,
+    hasOffer: false,
+    isBestSeller: true
+  },
+  {
+    id: 'static-bs-3',
+    name: 'Premium Leather Running Shoes',
+    price: 129.50,
+    category: 'Footwear',
+    brand: 'Nike',
+    image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&q=80&w=400',
+    rating: 4.7,
+    reviews: 892,
+    discount: 20,
+    hasOffer: true,
+    isBestSeller: true
+  },
+  {
+    id: 'static-bs-4',
+    name: 'Ultra-Slim 4K Smart TV',
+    price: 899.99,
+    category: 'Electronics',
+    brand: 'Samsung',
+    image: 'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?auto=format&fit=crop&q=80&w=400',
+    rating: 4.6,
+    reviews: 512,
+    discount: 10,
+    hasOffer: true,
+    isBestSeller: true
+  },
+  {
+    id: 'static-bs-5',
+    name: 'Professional DSLR Camera',
+    price: 1249.00,
+    category: 'Electronics',
+    brand: 'Canon',
+    image: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&q=80&w=400',
+    rating: 4.9,
+    reviews: 210,
+    discount: 0,
+    hasOffer: false,
+    isBestSeller: true
+  },
+  {
+    id: 'static-bs-6',
+    name: 'Ergonomic Office Chair',
+    price: 199.99,
+    category: 'Furniture',
+    brand: 'Herman Miller',
+    image: 'https://images.unsplash.com/photo-1505843490538-5133c6c7d0e1?auto=format&fit=crop&q=80&w=400',
+    rating: 4.5,
+    reviews: 1845,
+    discount: 5,
+    hasOffer: true,
+    isBestSeller: true
+  },
+  {
+    id: 'static-bs-7',
+    name: 'Stainless Steel Espresso Machine',
+    price: 450.00,
+    category: 'Appliances',
+    brand: 'Breville',
+    image: 'https://i.pinimg.com/1200x/29/41/1c/29411cf4c8e3824b620b237d3c1ad4c7.jpg',
+    rating: 4.8,
+    reviews: 742,
+    discount: 25,
+    hasOffer: true,
+    isBestSeller: true
+  },
+  {
+    id: 'static-bs-8',
+    name: 'Designer Sunglasses',
+    price: 155.00,
+    category: 'Accessories',
+    brand: 'Ray-Ban',
+    image: 'https://images.unsplash.com/photo-1511499767150-a48a237f0083?auto=format&fit=crop&q=80&w=400',
+    rating: 4.7,
+    reviews: 1332,
+    discount: 0,
+    hasOffer: false,
+    isBestSeller: true
+  }
+];
+
 const Home = () => {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -22,15 +129,39 @@ const Home = () => {
   const bestSellersRef = useRef(null);
 
   const scrollProductCarousel = (ref, direction) => {
-    if (ref.current) {
-      const scrollAmount = direction === 'left' ? -300 : 300;
-      ref.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    if (ref.current && ref.current.children.length > 0) {
+      let scrollAmount = 0;
+      
+      // Calculate exactly one item width + gap using the first two children
+      if (ref.current.children.length > 1) {
+        const itemPlusGap = ref.current.children[1].offsetLeft - ref.current.children[0].offsetLeft;
+        scrollAmount = itemPlusGap * 2; // Move exactly two products
+      } else {
+        scrollAmount = ref.current.children[0].offsetWidth * 2;
+      }
+      
+      // Fallback if calculations fail (e.g., offsetLeft is same due to weird styling)
+      if (scrollAmount <= 0) scrollAmount = 600;
+
+      const finalScroll = direction === 'left' ? -scrollAmount : scrollAmount;
+      ref.current.scrollBy({ left: finalScroll, behavior: 'smooth' });
     }
   };
 
   const [isDragging, setIsDragging] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
   const [startX, setStartX] = useState(0);
-  const [scrollLeft, setScrollLeft] = useState(0);
+  const [scrollLeftPos, setScrollLeftPos] = useState(0);
+
+  // Refs for requestAnimationFrame loop
+  const isHoveredRef = useRef(false);
+  const isDraggingRef = useRef(false);
+  const isInteractionPausedRef = useRef(false);
+  const pauseTimeoutRef = useRef(null);
+
+  // Keep refs synced with state
+  useEffect(() => { isHoveredRef.current = isHovered; }, [isHovered]);
+  useEffect(() => { isDraggingRef.current = isDragging; }, [isDragging]);
 
   // For infinite loop, we will duplicate categories
   const [displayCategories, setDisplayCategories] = useState([]);
@@ -58,36 +189,18 @@ const Home = () => {
   useEffect(() => {
     if (displayCategories.length > 0 && scrollRef.current) {
       const singleSetWidth = scrollRef.current.scrollWidth / 3;
-      scrollRef.current.style.scrollBehavior = 'auto';
+      scrollRef.current.style.scrollBehavior = 'auto'; // Ensure instant jump
       scrollRef.current.scrollLeft = singleSetWidth;
-      requestAnimationFrame(() => {
-        if (scrollRef.current) scrollRef.current.style.scrollBehavior = 'smooth';
-      });
     }
   }, [displayCategories]);
 
-  // Infinite loop jump logic
-  const handleScroll = () => {
-    if (!scrollRef.current) return;
-    const { scrollLeft, scrollWidth } = scrollRef.current;
-    const singleSetWidth = scrollWidth / 3;
-
-    // If we scrolled into the 3rd set, jump seamlessly back to the 2nd set
-    if (scrollLeft >= singleSetWidth * 2) {
-      scrollRef.current.style.scrollBehavior = 'auto';
-      scrollRef.current.scrollLeft -= singleSetWidth;
-      requestAnimationFrame(() => {
-        if (scrollRef.current) scrollRef.current.style.scrollBehavior = 'smooth';
-      });
-    } 
-    // If we scrolled into the 1st set, jump seamlessly to the 2nd set
-    else if (scrollLeft <= 0) {
-      scrollRef.current.style.scrollBehavior = 'auto';
-      scrollRef.current.scrollLeft += singleSetWidth;
-      requestAnimationFrame(() => {
-        if (scrollRef.current) scrollRef.current.style.scrollBehavior = 'smooth';
-      });
-    }
+  // Function to pause auto-scroll for a few seconds after user interaction
+  const triggerInteractionPause = () => {
+    isInteractionPausedRef.current = true;
+    if (pauseTimeoutRef.current) clearTimeout(pauseTimeoutRef.current);
+    pauseTimeoutRef.current = setTimeout(() => {
+      isInteractionPausedRef.current = false;
+    }, 2500); // 2.5 seconds pause
   };
 
   // Smooth continuous auto-scroll functionality
@@ -96,12 +209,30 @@ const Home = () => {
     let lastTime = performance.now();
 
     const smoothScroll = (time) => {
-      if (!isDragging && scrollRef.current) {
-        // Delta time for consistent speed regardless of refresh rate
+      if (scrollRef.current) {
         const deltaTime = time - lastTime;
-        if (deltaTime > 16) { // Approx 60fps
-          scrollRef.current.scrollLeft += 1; // 1px per frame is a nice smooth speed
-          lastTime = time;
+        
+        // Only scroll if not hovered, not dragging, and not paused by recent interaction
+        if (!isHoveredRef.current && !isDraggingRef.current && !isInteractionPausedRef.current) {
+          if (deltaTime > 16) { // Approx 60fps
+            scrollRef.current.scrollLeft += 1; // Smooth speed
+            lastTime = time;
+          }
+        } else {
+          lastTime = time; // Keep time synced even when paused
+        }
+        
+        // Check boundaries every frame to guarantee it never stops at the end
+        // Even if user manually native smooth-scrolls, we must catch boundaries!
+        const { scrollLeft, scrollWidth } = scrollRef.current;
+        const singleSetWidth = scrollWidth / 3;
+        
+        if (scrollLeft >= singleSetWidth * 2) {
+          scrollRef.current.style.scrollBehavior = 'auto'; // Disable smooth for instant teleport
+          scrollRef.current.scrollLeft -= singleSetWidth;
+        } else if (scrollLeft <= 0 && singleSetWidth > 0) {
+          scrollRef.current.style.scrollBehavior = 'auto'; // Disable smooth for instant teleport
+          scrollRef.current.scrollLeft += singleSetWidth;
         }
       }
       animationFrameId = requestAnimationFrame(smoothScroll);
@@ -111,33 +242,53 @@ const Home = () => {
 
     return () => {
       cancelAnimationFrame(animationFrameId);
+      if (pauseTimeoutRef.current) clearTimeout(pauseTimeoutRef.current);
     };
-  }, [isDragging]);
+  }, []); // Run once on mount
 
-  const handleMouseDown = (e) => {
+  // Mouse & Touch Handlers
+  const handleInteractionStart = (clientX) => {
     setIsDragging(true);
-    setStartX(e.pageX - scrollRef.current.offsetLeft);
-    setScrollLeft(scrollRef.current.scrollLeft);
+    triggerInteractionPause();
+    setStartX(clientX - scrollRef.current.offsetLeft);
+    setScrollLeftPos(scrollRef.current.scrollLeft);
   };
-
-  const handleMouseLeave = () => {
-    setIsDragging(false);
-  };
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
-
-  const handleMouseMove = (e) => {
+  
+  const handleInteractionMove = (clientX) => {
     if (!isDragging) return;
-    e.preventDefault();
-    const x = e.pageX - scrollRef.current.offsetLeft;
-    const walk = (x - startX) * 2;
-    scrollRef.current.scrollLeft = scrollLeft - walk;
+    triggerInteractionPause();
+    const x = clientX - scrollRef.current.offsetLeft;
+    const walk = (x - startX) * 1.5; // Drag speed multiplier
+    scrollRef.current.style.scrollBehavior = 'auto'; // Ensure it follows cursor instantly
+    scrollRef.current.scrollLeft = scrollLeftPos - walk;
+  };
+  
+  const handleInteractionEnd = () => {
+    if (isDragging) {
+      setIsDragging(false);
+      triggerInteractionPause();
+    }
   };
 
-  const scroll = (scrollOffset) => {
-    scrollRef.current.scrollBy({ left: scrollOffset, behavior: 'smooth' });
+  const handleMouseEnter = () => setIsHovered(true);
+  const handleMouseLeave = () => {
+    setIsHovered(false);
+    handleInteractionEnd();
+  };
+
+  const scrollCategoryBtn = (direction) => {
+    triggerInteractionPause();
+    if (!scrollRef.current) return;
+    
+    // Calculate width of one item + gap (1.5rem = 24px)
+    const firstChild = scrollRef.current.querySelector('.category-slide');
+    const scrollAmount = firstChild ? firstChild.offsetWidth + 24 : 200;
+    
+    scrollRef.current.style.scrollBehavior = 'smooth';
+    scrollRef.current.scrollBy({ 
+      left: direction === 'left' ? -scrollAmount : scrollAmount, 
+      behavior: 'smooth' 
+    });
   };
 
   if (loading) return <Loader />;
@@ -155,17 +306,20 @@ const Home = () => {
         <div 
           className="categories-carousel-container"
         >
-          <button className="carousel-nav-btn left" onClick={() => scroll(-300)} aria-label="Scroll left">
+          <button className="carousel-nav-btn left" onClick={() => scrollCategoryBtn('left')} aria-label="Scroll left">
             &#8249;
           </button>
           <div 
             className="categories-scroll-wrapper"
             ref={scrollRef}
-            onScroll={handleScroll}
-            onMouseDown={handleMouseDown}
+            onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
-            onMouseUp={handleMouseUp}
-            onMouseMove={handleMouseMove}
+            onMouseDown={(e) => handleInteractionStart(e.pageX)}
+            onMouseMove={(e) => { e.preventDefault(); handleInteractionMove(e.pageX); }}
+            onMouseUp={handleInteractionEnd}
+            onTouchStart={(e) => handleInteractionStart(e.touches[0].clientX)}
+            onTouchMove={(e) => handleInteractionMove(e.touches[0].clientX)}
+            onTouchEnd={handleInteractionEnd}
           >
             {displayCategories.map((category, index) => (
               <div key={`${category.name || category}-${index}`} className="category-slide">
@@ -173,7 +327,7 @@ const Home = () => {
               </div>
             ))}
           </div>
-          <button className="carousel-nav-btn right" onClick={() => scroll(300)} aria-label="Scroll right">
+          <button className="carousel-nav-btn right" onClick={() => scrollCategoryBtn('right')} aria-label="Scroll right">
             &#8250;
           </button>
         </div>
@@ -254,7 +408,7 @@ const Home = () => {
           </div>
           <div className="product-carousel-container">
             <div className="product-carousel-track" ref={bestSellersRef}>
-              {products.filter(p => p.isBestSeller).slice(0, 8).map(product => (
+              {staticBestSellers.map(product => (
                 <div key={product.id} className="product-carousel-item">
                   <ProductCard product={product} />
                 </div>

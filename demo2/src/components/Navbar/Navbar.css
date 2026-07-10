@@ -28,10 +28,20 @@
 }
 
 .nav-search {
-  flex: 1;
   margin: 0 2vw;
   position: relative;
   min-width: 250px;
+}
+
+@media (min-width: 969px) {
+  #desktop-search-right {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 500px;
+    margin: 0;
+  }
 }
 
 .nav-links {
@@ -42,9 +52,9 @@
 
 .nav-links li a {
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: var(--font-nav, 0.9rem);
   color: var(--text-main);
-  text-transform: uppercase;
+  text-transform: capitalize;
 }
 
 .mobile-search-btn {
@@ -307,6 +317,10 @@
   .nav-links li.nav-icon-link {
     display: flex;
     order: 2;
+  }
+
+  .nav-links li.nav-icon-link.user-profile {
+    display: none !important;
   }
 
   .mobile-search-btn {

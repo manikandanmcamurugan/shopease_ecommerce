@@ -26,16 +26,26 @@ const ProductDetails = () => {
   const carouselRef = useRef(null);
   const recommendedCarouselRef = useRef(null);
 
+  const calculateScrollAmount = (ref) => {
+    if (!ref.current || ref.current.children.length === 0) return 600;
+    if (ref.current.children.length > 1) {
+      return (ref.current.children[1].offsetLeft - ref.current.children[0].offsetLeft) * 2;
+    }
+    return ref.current.children[0].offsetWidth * 2;
+  };
+
   const scrollCarousel = (direction) => {
     if (carouselRef.current) {
-      const scrollAmount = direction === 'left' ? -300 : 300;
+      const amount = calculateScrollAmount(carouselRef);
+      const scrollAmount = direction === 'left' ? -amount : amount;
       carouselRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
     }
   };
 
   const scrollRecommendedCarousel = (direction) => {
     if (recommendedCarouselRef.current) {
-      const scrollAmount = direction === 'left' ? -300 : 300;
+      const amount = calculateScrollAmount(recommendedCarouselRef);
+      const scrollAmount = direction === 'left' ? -amount : amount;
       recommendedCarouselRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
     }
   };
@@ -64,8 +74,18 @@ const ProductDetails = () => {
   };
 
   const handleBuyNow = () => {
+    const productPayload = { ...product, price: displayPrice, selectedVariant: activeVariant };
+    if (!user) {
+      window.dispatchEvent(new CustomEvent('triggerLoginRedirect', {
+        detail: {
+          returnUrl: window.location.pathname,
+          action: { type: 'BUY_NOW', payload: { product: productPayload, quantity } }
+        }
+      }));
+      return;
+    }
     // Bypass the cart and checkout this specific item directly
-    navigate('/checkout', { state: { buyNowItems: [{ ...product, quantity }] } });
+    navigate('/checkout', { state: { buyNowItems: [{ ...productPayload, quantity }] } });
   };
 
   const handleRateProduct = async (rateValue) => {

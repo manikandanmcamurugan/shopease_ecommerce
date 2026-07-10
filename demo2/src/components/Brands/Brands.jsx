@@ -1,14 +1,14 @@
 import React from 'react';
 import './Brands.css';
 const brands = [
-  'https://placehold.co/200x100/f3f4f6/4b5563.png?text=Brand+1',
-  'https://placehold.co/200x100/f3f4f6/4b5563.png?text=Brand+2',
-  'https://placehold.co/200x100/f3f4f6/4b5563.png?text=Brand+3',
-  'https://placehold.co/200x100/f3f4f6/4b5563.png?text=Brand+4',
-  'https://placehold.co/200x100/f3f4f6/4b5563.png?text=Brand+5',
-  'https://placehold.co/200x100/f3f4f6/4b5563.png?text=Brand+6',
-  'https://placehold.co/200x100/f3f4f6/4b5563.png?text=Brand+7',
-  'https://placehold.co/200x100/f3f4f6/4b5563.png?text=Brand+8',
+  'https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg',
+  'https://i.pinimg.com/736x/49/60/c2/4960c291cf12f160191dcfe3c9ce82ea.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/a/a6/Logo_NIKE.svg',
+  'https://upload.wikimedia.org/wikipedia/commons/2/20/Adidas_Logo.svg',
+  'https://i.pinimg.com/1200x/f5/b3/a2/f5b3a28c81481481bc0dea0c765f98db.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/c/ca/Sony_logo.svg',
+  'https://upload.wikimedia.org/wikipedia/commons/a/ad/HP_logo_2012.svg',
+  'https://upload.wikimedia.org/wikipedia/commons/b/b8/Lenovo_logo_2015.svg',
 ];
 
 const Brands = () => {

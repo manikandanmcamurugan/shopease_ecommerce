@@ -47,7 +47,7 @@
 }
 
 .footer-links h3, .footer-contact h3 {
-  font-size: 1.1rem;
+  font-size: var(--font-footer-head, 16px);
   margin-bottom: 1.5rem;
   color: var(--text-main);
 }
@@ -58,7 +58,7 @@
 
 .footer-links ul li a {
   color: var(--text-muted);
-  font-size: 0.95rem;
+  font-size: var(--font-footer-link, 14px);
 }
 
 .footer-links ul li a:hover {
@@ -72,7 +72,7 @@
   gap: 1rem;
   margin-bottom: 1.2rem;
   color: var(--text-muted);
-  font-size: 0.95rem;
+  font-size: var(--font-footer-link, 14px);
 }
 
 .footer-contact .contact-item svg {

@@ -73,7 +73,7 @@ const Footer = () => {
           <p>&copy; {new Date().getFullYear()} ShopEase. All rights reserved.</p>
           <div className="payment-icons" style={{ display: 'flex', gap: '15px', alignItems: 'center', flexWrap: 'wrap' }}>
             <a href="https://www.visa.com" target="_blank" rel="noopener noreferrer" title="Visa">
-              <img src="https://upload.wikimedia.org/wikipedia/commons/4/41/Visa_Logo.png" alt="Visa" style={{ height: '14px', objectFit: 'contain' }} />
+              <img src="https://cdn.visa.com/v2/assets/images/logos/visa/blue/logo.png" alt="Visa" style={{ height: '14px', objectFit: 'contain' }} />
             </a>
             <a href="https://www.mastercard.com" target="_blank" rel="noopener noreferrer" title="Mastercard">
               <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" style={{ height: '16px', objectFit: 'contain' }} />

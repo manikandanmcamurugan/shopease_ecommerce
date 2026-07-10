@@ -175,7 +175,7 @@
 
   .products-layout {
     grid-template-columns: 1fr;
-    margin: 0 -1rem;
+    margin: 0;
   }
   
   .filters-sidebar {

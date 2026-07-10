@@ -35,15 +35,18 @@ const Navbar = () => {
           {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
 
-        {/* Desktop & Mobile Search Bar */}
-        <div className={`nav-search ${showMobileSearch ? 'mobile-visible' : ''}`}>
+        {/* Desktop & Mobile Search Bar (Center/Expanded) */}
+        <div className={`nav-search ${showMobileSearch ? 'mobile-visible' : ''}`} id="desktop-search-right">
           <SearchBar onSearchSubmit={handleSearch} />
         </div>
-        <ul className={`nav-links ${isMenuOpen ? 'active' : ''}`}>
+
+        {/* Text Links (Right side of Search) */}
+        <ul className="nav-links nav-text-links" style={{ marginLeft: 'auto', marginRight: '1.5rem' }}>
           <li className="nav-text-link"><Link to="/" onClick={() => setIsMenuOpen(false)}>Home</Link></li>
           <li className="nav-text-link"><Link to="/products" onClick={() => setIsMenuOpen(false)}>Products</Link></li>
+        </ul>
 
-
+        <ul className={`nav-links nav-icon-links ${isMenuOpen ? 'active' : ''}`} style={{ gap: '1.25rem' }}>
           {/* Mobile Search Icon */}
           <li className="nav-icon-link mobile-search-btn">
             <button onClick={() => setShowMobileSearch(!showMobileSearch)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
@@ -51,47 +54,55 @@ const Navbar = () => {
             </button>
           </li>
 
-          <li className="nav-icon-link">
-            <Link to="/wishlist" onClick={() => setIsMenuOpen(false)} id="nav-wishlist-icon">
-              <Heart size={22} />
-              <span className="icon-label">Wishlist</span>
-              {wishlist.length > 0 && <span className="badge">{wishlist.length}</span>}
-            </Link>
-          </li>
-          
-          <li className="nav-icon-link">
-            <Link to="/cart" onClick={() => setIsMenuOpen(false)} id="nav-cart-icon">
-              <ShoppingCart size={22} />
-              <span className="icon-label">Cart</span>
-              {cartCount > 0 && <span className="badge">{cartCount}</span>}
-            </Link>
-          </li>
+          {user && (
+            <>
+              <li className="nav-icon-link">
+                <Link to="/wishlist" onClick={() => setIsMenuOpen(false)} id="nav-wishlist-icon" title="Wishlist">
+                  <Heart size={24} />
+                  {wishlist.length > 0 && <span className="badge">{wishlist.length}</span>}
+                </Link>
+              </li>
+              
+              <li className="nav-icon-link">
+                <Link to="/cart" onClick={() => setIsMenuOpen(false)} id="nav-cart-icon" title="Cart">
+                  <ShoppingCart size={24} />
+                  {cartCount > 0 && <span className="badge">{cartCount}</span>}
+                </Link>
+              </li>
 
-          <li className="nav-auth">
-            {user ? (
-              <div className="user-profile-wrapper" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <div className="user-profile">
-                  <Link to="/profile" className="profile-link" onClick={() => setIsMenuOpen(false)}>
-                    <div className="nav-avatar">
-                      {(user?.name || user?.username || 'U').charAt(0).toUpperCase()}
-                    </div>
-                  </Link>
-                  <div className="profile-dropdown name-only-dropdown">
-                    <span className="nav-greeting">Hi! {user?.name || user?.username || 'User'}</span>
+              <li className="nav-icon-link user-profile">
+                <Link to="/profile" onClick={() => setIsMenuOpen(false)} title="My Account">
+                  <div style={{
+                    width: '24px', 
+                    height: '24px', 
+                    borderRadius: '50%', 
+                    backgroundColor: 'var(--primary)', 
+                    color: 'white', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    fontSize: '12px', 
+                    fontWeight: 'bold',
+                    textTransform: 'uppercase'
+                  }}>
+                    {user?.name?.charAt(0) || user?.username?.charAt(0) || user?.email?.charAt(0) || 'U'}
                   </div>
+                </Link>
+                <div className="profile-dropdown name-only-dropdown">
+                  <span className="nav-greeting">Hi! {user?.name?.split(' ')[0] || user?.username || 'User'}</span>
                 </div>
-                <div className="nav-divider"></div>
-                <button onClick={() => { logout(); setIsMenuOpen(false); }} className="logout-btn" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-                  <LogOut size={20} />
-                  <span>Logout</span>
-                </button>
-              </div>
-            ) : (
+              </li>
+
+            </>
+          )}
+
+          {!user && (
+            <li className="nav-icon-link nav-auth" style={{ margin: 0 }}>
               <Link to="/login" state={{ mode: 'login', timestamp: Date.now() }} className="btn btn-primary login-btn" onClick={() => setIsMenuOpen(false)}>
                 Login
               </Link>
-            )}
-          </li>
+            </li>
+          )}
         </ul>
       </div>
     </nav>
