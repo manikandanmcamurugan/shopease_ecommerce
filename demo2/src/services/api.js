@@ -13,10 +13,11 @@ api.interceptors.request.use((config) => {
 
   if (token) {
     // Safely set header depending on Axios version
+    // DRF uses 'Token' by default for TokenAuthentication, not 'Bearer'
     if (config.headers && typeof config.headers.set === 'function') {
-      config.headers.set('Authorization', `Bearer ${token}`);
+      config.headers.set('Authorization', `Token ${token}`);
     } else {
-      config.headers.Authorization = `Bearer ${token}`;
+      config.headers.Authorization = `Token ${token}`;
     }
   }
 

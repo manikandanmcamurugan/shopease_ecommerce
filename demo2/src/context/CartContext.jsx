@@ -20,11 +20,11 @@ export const CartProvider = ({ children }) => {
       return;
     }
     try {
-      const userKey = user.id || user.email || user.username || 'guest';
-      const savedCart = localStorage.getItem(`shopease_cart_${userKey}`);
-      let items = savedCart ? JSON.parse(savedCart) : [];
+      const cartRes = await cartService.getCart();
+      const backendItems = cartRes.data?.results || cartRes.data || [];
 
       // Fetch products to enrich the cart items with details
+      let items = backendItems;
       try {
         const { default: productService } = await import('../services/productService');
         const prodRes = await productService.getProducts();
@@ -51,7 +51,7 @@ export const CartProvider = ({ children }) => {
 
       setCartItems(items);
     } catch (error) {
-      console.error('Failed to fetch cart locally:', error);
+      console.error('Failed to fetch cart from backend:', error);
       setError('Failed to load cart');
     } finally {
       setLoading(false);
@@ -92,85 +92,69 @@ export const CartProvider = ({ children }) => {
       flyToIcon(event, 'nav-cart-icon');
     }
     
-    setCartItems(prev => {
-      let newItems;
-      const existing = prev.find(item => (item.product_id ?? item.product?.id ?? item.id) === product.id);
-      if (existing) {
-        newItems = prev.map(item => 
-          (item.product_id ?? item.product?.id ?? item.id) === product.id 
-            ? { ...item, quantity: (item.quantity || 1) + quantity } 
-            : item
-        );
-      } else {
-        newItems = [...prev, { id: Date.now(), product_id: product.id, product, quantity }];
-      }
-      saveCartLocally(user, newItems);
-      return newItems;
-    });
-    
-    addToast(`${product.name || 'Item'} added to Cart!`, 'success');
-    cartService.addToCart(product.id, quantity).catch(e => console.error("Backend tracking failed", e));
+    try {
+      await cartService.addToCart(product.id, quantity);
+      await fetchCart();
+      addToast(`${product.name || 'Item'} added to Cart!`, 'success');
+    } catch (e) {
+      console.error("Backend add to cart failed", e);
+      addToast('Failed to add item to cart', 'error');
+    }
   };
 
   const removeFromCart = async (itemId) => {
     if (!user) {
       window.dispatchEvent(new CustomEvent('triggerLoginRedirect', {
-        detail: {
-          returnUrl: window.location.pathname
-        }
+        detail: { returnUrl: window.location.pathname }
       }));
       return;
     }
     
     const cartItem = cartItems.find(i => i.id === itemId || i.cart_item_id === itemId || (i.product_id ?? i.product?.id) === itemId);
-    const productId = cartItem?.product_id ?? cartItem?.product?.id ?? itemId;
+    // Use the cart item ID (i.id) if the backend returns one, otherwise fallback to item ID logic
+    const cartItemId = cartItem?.cart_item_id ?? cartItem?.id ?? itemId;
 
-    setCartItems(prev => {
-      const newItems = prev.filter(i => 
-        i.id !== itemId && i.cart_item_id !== itemId && (i.product_id ?? i.product?.id) !== itemId
-      );
-      saveCartLocally(user, newItems);
-      return newItems;
-    });
-    
-    addToast('Item removed from Cart', 'info');
-    cartService.removeFromCart(productId).catch(e => console.error("Backend tracking failed", e));
+    try {
+      await cartService.removeFromCart(cartItemId);
+      await fetchCart();
+      addToast('Item removed from Cart', 'info');
+    } catch (e) {
+      console.error("Backend remove from cart failed", e);
+      addToast('Failed to remove item', 'error');
+    }
   };
 
   const updateQuantity = async (itemId, quantity) => {
     if (!user) {
       window.dispatchEvent(new CustomEvent('triggerLoginRedirect', {
-        detail: {
-          returnUrl: window.location.pathname
-        }
+        detail: { returnUrl: window.location.pathname }
       }));
       return;
     }
     if (quantity < 1) return;
     
     const cartItem = cartItems.find(i => i.id === itemId || i.cart_item_id === itemId || (i.product_id ?? i.product?.id) === itemId);
-    const productId = cartItem?.product_id ?? cartItem?.product?.id ?? itemId;
+    const cartItemId = cartItem?.cart_item_id ?? cartItem?.id ?? itemId;
 
-    setCartItems(prev => {
-      const newItems = prev.map(i => {
-        if (i.id === itemId || i.cart_item_id === itemId || (i.product_id ?? i.product?.id) === itemId) {
-          return { ...i, quantity };
-        }
-        return i;
-      });
-      saveCartLocally(user, newItems);
-      return newItems;
-    });
-    
-    addToast('Cart updated', 'success');
-    cartService.updateCart(productId, quantity).catch(e => console.error("Backend tracking failed", e));
+    try {
+      // Optimistically update the UI so it doesn't feel sluggish
+      setCartItems(prev => prev.map(i => i.id === cartItem?.id ? { ...i, quantity } : i));
+      
+      await cartService.updateCart(cartItemId, quantity);
+      await fetchCart(); // Ensure it's in sync with backend
+      addToast('Cart updated', 'success');
+    } catch (e) {
+      console.error("Backend update cart failed", e);
+      addToast('Failed to update quantity', 'error');
+      fetchCart(); // Revert to backend state
+    }
   };
 
-  const clearCart = () => {
+  const clearCart = async () => {
+    // There usually isn't a "clear cart" API natively in RESTful carts unless specified, 
+    // but typically we can just delete each item or let the order completion clear it.
+    // For now we clear frontend state.
     setCartItems([]);
-    if (user) {
-      saveCartLocally(user, []);
-    }
   };
 
   const cartTotal = cartItems.reduce((total, item) => {

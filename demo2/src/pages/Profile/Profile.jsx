@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import authService from '../../services/authService';
 import { orderService } from '../../services/cartService';
+import productService from '../../services/productService';
 import Loader from '../../components/Loader/Loader';
 import { Link } from 'react-router-dom';
 import './Profile.css';
@@ -40,21 +41,98 @@ const Profile = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      try {
-        const token = localStorage.getItem('shopease_token');
+      const token = localStorage.getItem('shopease_token');
         if (!token || token === "undefined" || token === "null") {
           setLoading(false);
           return;
         }
-        const profRes = await authService.getProfile();
-        const orderRes = await orderService.getOrders();
-        setProfile(profRes.data);
-        setOrders(orderRes.data);
-      } catch (error) {
-        console.error(error);
-      } finally {
+
+        try {
+          const profRes = await authService.getProfile();
+          setProfile(profRes.data);
+        } catch (error) {
+          console.error("Failed to fetch profile", error);
+        }
+
+        let userOrders = [];
+        try {
+          const [orderRes, prodRes] = await Promise.all([
+            orderService.getOrders(),
+            productService.getProducts()
+          ]);
+          const allProducts = prodRes.data || [];
+          const rawData = Array.isArray(orderRes.data) ? orderRes.data : orderRes.data?.results ?? [];
+          
+          // Fetch detailed info (including items) for each order, just like Orders.jsx
+          userOrders = await Promise.all(
+            rawData.map(async (order) => {
+              try {
+                const detailRes = await orderService.getOrder(order.id);
+                const orderData = { ...order, ...detailRes.data };
+                
+                const orderItems = orderData.items || orderData.order_items || orderData.cart_items || orderData.products || [];
+                
+                if (Array.isArray(orderItems) && orderItems.length > 0) {
+                  orderData.items = await Promise.all(orderItems.map(async (item) => {
+                    const prodId = typeof item.product === 'object' ? item.product?.id : (item.product ?? item.product_id);
+                    let matchedProduct = allProducts.find(p => p.id === prodId || String(p.id) === String(prodId));
+                    
+                    if (!matchedProduct && prodId) {
+                      try {
+                        const prodRes = await productService.getProductById(prodId);
+                        if (prodRes && prodRes.data) {
+                          matchedProduct = prodRes.data;
+                        }
+                      } catch (e) {
+                        console.error(`Failed to fetch individual product ${prodId}`);
+                      }
+                    }
+
+                    if (matchedProduct) {
+                      item.resolvedImage = matchedProduct.image || matchedProduct.images?.[0];
+                      item.resolvedName = matchedProduct.name || matchedProduct.title;
+                    } else {
+                      item.resolvedImage = item.image || item.product_image;
+                      item.resolvedName = item.product_name || item.name;
+                    }
+                    return item;
+                  }));
+                } else {
+                  orderData.items = [];
+                }
+                return orderData;
+              } catch (err) {
+                return order;
+              }
+            })
+          );
+        } catch (error) {
+          console.error("Failed to fetch backend orders", error);
+        }
+        
+        // Merge with LocalStorage to fix missing items from backend Buy Now bug
+        const localOrders = JSON.parse(localStorage.getItem('shopease_recent_orders') || '[]');
+        userOrders = userOrders.map(order => {
+          const matchingLocal = localOrders.find(lo => String(lo.id) === String(order.id));
+          if (matchingLocal && (!order.items || order.items.length === 0)) {
+            return { ...order, items: matchingLocal.items, total_amount: matchingLocal.total_amount };
+          }
+          return order;
+        });
+        localOrders.forEach(localOrder => {
+          if (!userOrders.find(o => String(o.id) === String(localOrder.id))) {
+            userOrders.push(localOrder);
+          }
+        });
+        
+        // Filter out completely empty orders from the backend to remove static dummy entries
+        userOrders = userOrders.filter(order => order.items && order.items.length > 0);
+        
+        // Sort newest first
+        userOrders.sort((a, b) => b.id - a.id);
+        
+        setOrders(userOrders);
         setLoading(false);
-      }
     };
     fetchData();
     const savedAddrs = JSON.parse(localStorage.getItem('shopease_addresses')) || [];
@@ -268,28 +346,6 @@ const Profile = () => {
               </div>
             </div>
 
-            <div className="profile-card avatar-card">
-              <div className="avatar-card-left">
-                <div className="user-avatar large" style={{ width: '70px', height: '70px', fontSize: '2rem' }}>
-                  {displayImage ? (
-                    <img src={displayImage} alt="Profile" className="avatar-img" />
-                  ) : (
-                    displayName.charAt(0).toUpperCase()
-                  )}
-                </div>
-                <div className="avatar-card-info">
-                  <h3>Upload a New Photo</h3>
-                  <p>{selectedImage ? selectedImage.name : 'Profile-pic.jpg'}</p>
-                </div>
-              </div>
-              <div className="avatar-card-right">
-                <input type="file" ref={fileInputRef} style={{ display: 'none' }} accept="image/*" onChange={handleFileChange} />
-                <button className="btn btn-outline" onClick={() => fileInputRef.current?.click()}>
-                  Update
-                </button>
-              </div>
-            </div>
-
             <div className="profile-card form-card">
               <h3 className="form-card-title">Change User Information here</h3>
               
@@ -441,18 +497,54 @@ const Profile = () => {
               </div>
             ) : (
               <div className="recent-orders">
-                {orders.map(order => (
-                  <div key={order.id} className="order-summary-card premium">
-                    <div className="order-main">
-                      <span className="order-id">Order #{order.id}</span>
-                      <span className="order-date">{order.date}</span>
+                {orders.map(order => {
+                  const orderItems = order.items || order.order_items || order.cart_items || order.products || [];
+                  return (
+                    <div key={order.id} className="order-summary-card premium">
+                      <div className="order-main">
+                        <span className="order-id">Order #{order.id}</span>
+                        <span className="order-date">{order.date || new Date(order.created_at).toLocaleDateString()}</span>
+                      </div>
+                      <div className="order-meta mb-2">
+                        <span className="order-total">₹{Number(order.total || order.total_amount || 0).toFixed(2)}</span>
+                        <span className={`order-status ${(order.status || 'Processing').toLowerCase()}`}>{order.status || 'Processing'}</span>
+                      </div>
+                      {orderItems.length > 0 && (
+                        <div className="profile-order-items pt-2 mt-2 border-top">
+                          {orderItems.map((item, idx) => {
+                            const name = item.resolvedName ?? item.product?.name ?? item.name ?? item.product_name ?? 'Product';
+                            const image = item.resolvedImage ?? item.product?.image ?? item.image ?? item.product_image ?? 'https://via.placeholder.com/50';
+                            // Ensure absolute URL if backend returns relative
+                            const imageUrl = image.startsWith('http') ? image : `https://z12.7d8.mytemp.website${image}`;
+                            
+                            return (
+                              <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+                                <Link to={`/products/${item.product?.id || item.product_id || item.id}`}>
+                                  <img src={imageUrl} alt={name} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} onError={(e) => e.target.src = 'https://via.placeholder.com/40'} />
+                                </Link>
+                                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                  <Link to={`/products/${item.product?.id || item.product_id || item.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                                    <span style={{ fontSize: '0.9rem', fontWeight: '500' }}>{name}</span>
+                                  </Link>
+                                  <span style={{ fontSize: '0.8rem', color: '#666' }}>Qty: {item.quantity || 1} &nbsp;|&nbsp; ₹{Number(item.price ?? item.unit_price ?? 0).toFixed(2)}</span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                      <div className="mt-2 text-end">
+                        <Link 
+                          to={orderItems.length > 0 ? `/products/${orderItems[0].product?.id || orderItems[0].product_id || orderItems[0].id}` : `/orders/${order.id}`} 
+                          className="btn-link" 
+                          style={{ fontSize: '0.85rem' }}
+                        >
+                          View Details <ChevronRight size={14} />
+                        </Link>
+                      </div>
                     </div>
-                    <div className="order-meta">
-                      <span className="order-total">${order.total.toFixed(2)}</span>
-                      <span className={`order-status ${order.status.toLowerCase()}`}>{order.status}</span>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </section>

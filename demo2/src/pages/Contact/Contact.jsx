@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Mail, Phone, MapPin, Send } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
+import contactService from '../../services/contactService';
 import './Contact.css';
 
 const Contact = () => {
@@ -13,15 +14,36 @@ const Contact = () => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    // Simulate API call
-    setTimeout(() => {
+    
+    try {
+      await contactService.submitContact(formData);
       addToast('Message sent successfully! We will get back to you soon.', 'success');
       setFormData({ name: '', email: '', message: '' });
+    } catch (error) {
+      console.error('Failed to send message:', error);
+      
+      let errorMsg = 'Failed to send message. Please try again.';
+      if (error.response?.status === 404) {
+        errorMsg = "Contact API endpoint not found on the server (404).";
+      } else if (error.response?.data) {
+        // Handle common validation error formats from Django REST Framework
+        if (typeof error.response.data === 'object' && !Array.isArray(error.response.data)) {
+          const firstErrorKey = Object.keys(error.response.data)[0];
+          const firstErrorVal = error.response.data[firstErrorKey];
+          if (Array.isArray(firstErrorVal)) {
+             errorMsg = `${firstErrorKey}: ${firstErrorVal[0]}`;
+          } else if (typeof firstErrorVal === 'string') {
+             errorMsg = firstErrorVal;
+          }
+        }
+      }
+      addToast(errorMsg, 'error');
+    } finally {
       setIsSubmitting(false);
-    }, 1000);
+    }
   };
 
   return (

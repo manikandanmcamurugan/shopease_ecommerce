@@ -373,7 +373,14 @@ const Login = () => {
                   onBlur={handleBlur}
                   required
                 />
-               
+                <button
+                  type="button"
+                  className="password-toggle"
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{ position: 'absolute', right: '15px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#6b7280', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
               {formErrors.password && touched.password && authMode !== 'register' && <span className="field-error">{formErrors.password}</span>}
               {authMode === 'register' && (
@@ -462,6 +469,7 @@ const Login = () => {
                   type="button"
                   className="password-toggle"
                   onClick={() => setShowPassword(!showPassword)}
+                  style={{ position: 'absolute', right: '15px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#6b7280', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>

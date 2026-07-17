@@ -2,6 +2,7 @@ import React, { createContext, useState, useContext, useEffect } from 'react';
 import { useToast } from './ToastContext';
 import { useAuth } from './AuthContext';
 import { flyToIcon } from '../utils/animations';
+import wishlistService from '../services/wishlistService';
 
 const WishlistContext = createContext();
 
@@ -12,17 +13,36 @@ export const WishlistProvider = ({ children }) => {
   const { user } = useAuth();
 
   useEffect(() => {
-    if (user) {
-      try {
-        const userKey = user.id || user.email || user.username || 'guest';
-        const savedWishlist = localStorage.getItem(`shopease_wishlist_${userKey}`);
-        setWishlist(savedWishlist ? JSON.parse(savedWishlist) : []);
-      } catch (e) {
+    const fetchWishlist = async () => {
+      if (user) {
+        setLoading(true);
+        try {
+          // Fetch from backend
+          const response = await wishlistService.getWishlist();
+          let items = response.data.results || response.data || [];
+          
+          // Optionally populate from local storage as fallback/cache if backend is empty
+          if (items.length === 0) {
+            const userKey = user.id || user.email || user.username || 'guest';
+            const savedWishlist = localStorage.getItem(`shopease_wishlist_${userKey}`);
+            if (savedWishlist) {
+              items = JSON.parse(savedWishlist);
+            }
+          }
+          setWishlist(items);
+        } catch (e) {
+          console.error("Failed to fetch wishlist from backend:", e);
+          const userKey = user.id || user.email || user.username || 'guest';
+          const savedWishlist = localStorage.getItem(`shopease_wishlist_${userKey}`);
+          setWishlist(savedWishlist ? JSON.parse(savedWishlist) : []);
+        } finally {
+          setLoading(false);
+        }
+      } else {
         setWishlist([]);
       }
-    } else {
-      setWishlist([]);
-    }
+    };
+    fetchWishlist();
   }, [user]);
 
   const saveWishlistLocally = (userObj, items) => {
@@ -55,6 +75,8 @@ export const WishlistProvider = ({ children }) => {
       saveWishlistLocally(user, newItems);
       return newItems;
     });
+    
+    wishlistService.addToWishlist(product.id).catch(e => console.error("Backend wishlist add failed", e));
   };
 
   const removeFromWishlist = (productOrId) => {
@@ -68,12 +90,15 @@ export const WishlistProvider = ({ children }) => {
     }
     const id = typeof productOrId === 'object' ? productOrId.id : productOrId;
     const name = typeof productOrId === 'object' ? productOrId.name || 'Item' : 'Item';
+    
     setWishlist(prev => {
       const newItems = prev.filter(item => item.id !== id);
       saveWishlistLocally(user, newItems);
       return newItems;
     });
+    
     addToast(`${name} removed from Wishlist`, 'info');
+    wishlistService.removeFromWishlist(id).catch(e => console.error("Backend wishlist remove failed", e));
   };
 
   const isInWishlist = (productId) => {

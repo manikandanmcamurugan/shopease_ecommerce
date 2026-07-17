@@ -57,15 +57,17 @@ const Products = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const prodRes = await productService.getProducts();
+        let prodRes;
+        if (searchQuery) {
+          prodRes = await productService.searchProducts(searchQuery);
+        } else {
+          prodRes = await productService.getProducts();
+        }
+        
         const catRes = await productService.getCategories();
         const fetchedProducts = prodRes?.data || [];
         setProducts(fetchedProducts);
         setCategories(catRes.data);
-        
-        if (fetchedProducts.length > 0) {
-          // Dynamic max price calculation removed as we now use fixed ranges
-        }
         
         if (categoryParam) setSelectedCategory(categoryParam);
       } catch (error) {
@@ -75,7 +77,7 @@ const Products = () => {
       }
     };
     fetchData();
-  }, [categoryParam]);
+  }, [categoryParam, searchQuery]);
 
   // Effect 1: Removed dynamic Max Price calculation since we use fixed ranges in select
   useEffect(() => {
@@ -86,10 +88,7 @@ const Products = () => {
   useEffect(() => {
     let result = [...products];
 
-    // Search filter
-    if (searchQuery) {
-      result = result.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()));
-    }
+    // Search filtering is now handled by the backend API
 
     // Category filter
     if (selectedCategory !== 'All') {

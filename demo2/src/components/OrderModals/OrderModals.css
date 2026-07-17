@@ -1,0 +1,188 @@
+.order-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+  padding: 1rem;
+}
+
+.order-modal-content {
+  background-color: var(--card-bg, #fff);
+  width: 100%;
+  max-width: 500px;
+  border-radius: 12px;
+  padding: 2rem;
+  position: relative;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  animation: modal-fade-in 0.3s ease-out;
+}
+
+@keyframes modal-fade-in {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.close-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted, #666);
+  padding: 0.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.close-btn:hover {
+  background-color: var(--bg-hover, #f3f4f6);
+  color: var(--text-primary, #111);
+}
+
+.order-modal-content h3 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: var(--text-primary, #111);
+}
+
+.order-id-subtitle {
+  color: var(--text-muted, #666);
+  font-size: 0.9rem;
+  margin-top: 0.25rem;
+  margin-bottom: 2rem;
+}
+
+/* Tracking Timeline */
+.tracking-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.timeline-step {
+  display: flex;
+  position: relative;
+  gap: 1.5rem;
+}
+
+.timeline-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #f3f4f6;
+  color: #9ca3af;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  transition: all 0.3s ease;
+}
+
+.timeline-step.active .timeline-icon {
+  background-color: var(--primary, #3b82f6);
+  color: white;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+}
+
+.timeline-info {
+  padding-bottom: 2rem;
+  padding-top: 0.5rem;
+}
+
+.timeline-info h4 {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--text-muted, #6b7280);
+  transition: color 0.3s ease;
+}
+
+.timeline-step.active .timeline-info h4 {
+  color: var(--text-primary, #111);
+  font-weight: 600;
+}
+
+.timeline-date {
+  font-size: 0.8rem;
+  color: #10b981;
+  display: block;
+  margin-top: 0.25rem;
+  font-weight: 500;
+}
+
+.timeline-line {
+  position: absolute;
+  left: 20px;
+  top: 40px;
+  bottom: -10px;
+  width: 2px;
+  background-color: #e5e7eb;
+  z-index: 1;
+}
+
+.timeline-line.active-line {
+  background-color: var(--primary, #3b82f6);
+}
+
+.timeline-step:last-child .timeline-info {
+  padding-bottom: 0;
+}
+
+.cancelled-state {
+  text-align: center;
+  padding: 2rem 0;
+}
+
+.cancelled-state h4 {
+  color: #ef4444;
+  margin-top: 1rem;
+  font-size: 1.25rem;
+}
+
+/* Shipping Details */
+.shipping-details-card {
+  display: flex;
+  gap: 1.5rem;
+  background-color: #f8fafc;
+  padding: 1.5rem;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.shipping-icon {
+  background-color: #e0f2fe;
+  color: #0284c7;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.shipping-info-text h4 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.1rem;
+}
+
+.shipping-info-text p {
+  margin: 0 0 0.25rem 0;
+  color: #475569;
+  line-height: 1.5;
+}
+
+.shipping-phone {
+  margin-top: 1rem !important;
+  color: #0f172a !important;
+}

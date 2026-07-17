@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Star, ShoppingCart, Heart, ShieldCheck, Truck, RotateCcw, Send, ChevronLeft, ChevronRight } from 'lucide-react';
 import productService from '../../services/productService';
+import reviewService from '../../services/reviewService';
 import { useCart } from '../../context/CartContext';
 import { useWishlist } from '../../context/WishlistContext';
 import { useAuth } from '../../context/AuthContext';
@@ -22,6 +23,8 @@ const ProductDetails = () => {
   const [activeImage, setActiveImage] = useState(null);
   const [selectedColor, setSelectedColor] = useState('');
   const [selectedSize, setSelectedSize] = useState('');
+  const [reviewsList, setReviewsList] = useState([]);
+  const [loadingReviews, setLoadingReviews] = useState(false);
   const navigate = useNavigate();
   const carouselRef = useRef(null);
   const recommendedCarouselRef = useRef(null);
@@ -97,7 +100,7 @@ const ProductDetails = () => {
     setIsSubmittingRating(true);
     setRatingMessage('');
     try {
-      await productService.rateProduct(id, rateValue);
+      await reviewService.createReview({ product_id: id, rating: rateValue });
       setRatingMessage("Thanks for your rating!");
     } catch (error) {
       setRatingMessage("Failed to submit rating.");
@@ -122,16 +125,48 @@ const ProductDetails = () => {
         if (colors.length > 0) setSelectedColor(colors[0]);
         if (sizes.length > 0) setSelectedSize(sizes[0]);
         
-        const allProdRes = await productService.getProducts();
-        const related = allProdRes.data.filter(p => p.category === res.data.category && p.id !== res.data.id).slice(0, 8);
-        setRelatedProducts(related);
+        const [relatedRes, recommendedRes] = await Promise.all([
+          productService.getCustomersAlsoBought(id).catch(() => ({ data: [] })),
+          productService.getRecommendations(id).catch(() => ({ data: [] }))
+        ]);
         
-        const recommended = allProdRes.data.filter(p => p.id !== res.data.id && !related.some(r => r.id === p.id)).sort((a,b) => b.rating - a.rating).slice(0, 8);
-        setRecommendedProducts(recommended);
+        let related = relatedRes.data || [];
+        let recommended = recommendedRes.data || [];
+        
+        // Fallbacks if backend doesn't return anything or threw a 500
+        if (related.length === 0 || recommended.length === 0) {
+          const allProdRes = await productService.getProducts().catch(() => ({ data: [] }));
+          const allProds = allProdRes.data || [];
+          if (related.length === 0) {
+            related = allProds.filter(p => p.category === res.data.category && p.id !== res.data.id);
+          }
+          if (recommended.length === 0) {
+            recommended = allProds.filter(p => p.id !== res.data.id && !related.some(r => r.id === p.id)).sort((a,b) => (b.rating || 0) - (a.rating || 0));
+          }
+        }
+        
+        setRelatedProducts(related.slice(0, 8));
+        setRecommendedProducts(recommended.slice(0, 8));
       } catch (error) {
         console.error(error);
       } finally {
         setLoading(false);
+      }
+      
+      // Fetch reviews
+      setLoadingReviews(true);
+      try {
+        const reviewsRes = await reviewService.getReviews(id);
+        setReviewsList(reviewsRes.data.results || reviewsRes.data || []);
+      } catch (error) {
+        if (error.response && error.response.status === 404) {
+          // Backend doesn't have a reviews endpoint yet, so ignore silently
+          console.log("Reviews endpoint not available on backend.");
+        } else {
+          console.error("Failed to fetch reviews:", error);
+        }
+      } finally {
+        setLoadingReviews(false);
       }
     };
     fetchProduct();
@@ -155,6 +190,13 @@ const ProductDetails = () => {
   const inStock = displayStock > 0;
   
   const imagesList = product.images?.length > 0 ? product.images.filter(Boolean).map(img => img.image || img) : [product.image].filter(Boolean);
+
+  // Dynamic reviews calculation
+  const sortedReviews = [...reviewsList].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+  const reviewsCount = sortedReviews.length;
+  const averageRating = reviewsCount > 0 
+    ? sortedReviews.reduce((sum, review) => sum + (review.rating || 0), 0) / reviewsCount 
+    : (product.rating || 0);
 
   return (
     <div className="product-details-page container">
@@ -217,14 +259,14 @@ const ProductDetails = () => {
                 onClick={() => handleRateProduct(star)}
                 style={{
                   cursor: 'pointer',
-                  fill: star <= (hoverRating || userRating || Math.round(product.rating)) ? '#eab308' : 'none',
-                  color: star <= (hoverRating || userRating || Math.round(product.rating)) ? '#eab308' : '#cbd5e1',
+                  fill: star <= (hoverRating || userRating || Math.round(averageRating)) ? '#eab308' : 'none',
+                  color: star <= (hoverRating || userRating || Math.round(averageRating)) ? '#eab308' : '#cbd5e1',
                   transition: 'color 0.2s, fill 0.2s'
                 }}
               />
             ))}
             <span className="reviews-count" style={{ marginLeft: '8px', color: '#64748b', fontSize: '0.9rem' }}>
-              ({product.reviews} reviews)
+              ({reviewsCount} reviews)
             </span>
           </div>
           {ratingMessage && <p className="rating-message" style={{ color: '#10b981', fontSize: '0.9rem', marginTop: '-0.5rem', marginBottom: '1rem' }}>{ratingMessage}</p>}
@@ -357,6 +399,46 @@ const ProductDetails = () => {
           </div>
         </section>
       )}
+
+      {/* Reviews Section */}
+      <section className="reviews-section" style={{ marginTop: '3rem', padding: '2rem 0', borderTop: '1px solid #e2e8f0' }}>
+        <h2 style={{ marginBottom: '1.5rem' }}>Customer Reviews</h2>
+        {loadingReviews ? (
+          <p>Loading reviews...</p>
+        ) : sortedReviews.length > 0 ? (
+          <div className="reviews-list" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            {sortedReviews.map((review, idx) => (
+              <div key={idx} className="review-card" style={{ padding: '1.5rem', backgroundColor: '#f8fafc', borderRadius: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '0.5rem' }}>
+                  <div style={{ display: 'flex' }}>
+                    {[1, 2, 3, 4, 5].map(star => (
+                      <Star
+                        key={star}
+                        size={16}
+                        fill={star <= (review.rating || 0) ? '#eab308' : 'none'}
+                        color={star <= (review.rating || 0) ? '#eab308' : '#cbd5e1'}
+                      />
+                    ))}
+                  </div>
+                  <strong style={{ fontSize: '0.95rem' }}>{review.user_name || review.user || 'Anonymous User'}</strong>
+                </div>
+                {review.comment && (
+                  <p style={{ margin: '0.5rem 0 0', color: '#475569', fontSize: '0.95rem', lineHeight: '1.5' }}>
+                    {review.comment}
+                  </p>
+                )}
+                {review.created_at && (
+                  <span style={{ display: 'block', marginTop: '0.5rem', fontSize: '0.8rem', color: '#94a3b8' }}>
+                    {new Date(review.created_at).toLocaleDateString()}
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p style={{ color: '#64748b' }}>No reviews yet. Be the first to rate this product!</p>
+        )}
+      </section>
 
       {recommendedProducts.length > 0 && (
         <section className="related-section" style={{ paddingTop: '2rem', borderTop: 'none' }}>

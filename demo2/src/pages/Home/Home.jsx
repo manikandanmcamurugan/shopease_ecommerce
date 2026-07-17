@@ -8,115 +8,12 @@ import Loader from '../../components/Loader/Loader';
 import Brands from '../../components/Brands/Brands';
 import './Home.css';
 
-const staticBestSellers = [
-  {
-    id: 'static-bs-1',
-    name: 'Wireless Noise-Cancelling Headphones',
-    price: 299.99,
-    category: 'Electronics',
-    brand: 'Sony',
-    image: 'https://images.unsplash.com/photo-1618366712010-f4ae9c647dcb?auto=format&fit=crop&q=80&w=400',
-    rating: 4.8,
-    reviews: 1245,
-    discount: 15,
-    hasOffer: true,
-    isBestSeller: true
-  },
-  {
-    id: 'static-bs-2',
-    name: 'Smart Fitness Watch Series 7',
-    price: 399.00,
-    category: 'Electronics',
-    brand: 'Apple',
-    image: 'https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&q=80&w=400',
-    rating: 4.9,
-    reviews: 3421,
-    discount: 0,
-    hasOffer: false,
-    isBestSeller: true
-  },
-  {
-    id: 'static-bs-3',
-    name: 'Premium Leather Running Shoes',
-    price: 129.50,
-    category: 'Footwear',
-    brand: 'Nike',
-    image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&q=80&w=400',
-    rating: 4.7,
-    reviews: 892,
-    discount: 20,
-    hasOffer: true,
-    isBestSeller: true
-  },
-  {
-    id: 'static-bs-4',
-    name: 'Ultra-Slim 4K Smart TV',
-    price: 899.99,
-    category: 'Electronics',
-    brand: 'Samsung',
-    image: 'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?auto=format&fit=crop&q=80&w=400',
-    rating: 4.6,
-    reviews: 512,
-    discount: 10,
-    hasOffer: true,
-    isBestSeller: true
-  },
-  {
-    id: 'static-bs-5',
-    name: 'Professional DSLR Camera',
-    price: 1249.00,
-    category: 'Electronics',
-    brand: 'Canon',
-    image: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&q=80&w=400',
-    rating: 4.9,
-    reviews: 210,
-    discount: 0,
-    hasOffer: false,
-    isBestSeller: true
-  },
-  {
-    id: 'static-bs-6',
-    name: 'Ergonomic Office Chair',
-    price: 199.99,
-    category: 'Furniture',
-    brand: 'Herman Miller',
-    image: 'https://images.unsplash.com/photo-1505843490538-5133c6c7d0e1?auto=format&fit=crop&q=80&w=400',
-    rating: 4.5,
-    reviews: 1845,
-    discount: 5,
-    hasOffer: true,
-    isBestSeller: true
-  },
-  {
-    id: 'static-bs-7',
-    name: 'Stainless Steel Espresso Machine',
-    price: 450.00,
-    category: 'Appliances',
-    brand: 'Breville',
-    image: 'https://i.pinimg.com/1200x/29/41/1c/29411cf4c8e3824b620b237d3c1ad4c7.jpg',
-    rating: 4.8,
-    reviews: 742,
-    discount: 25,
-    hasOffer: true,
-    isBestSeller: true
-  },
-  {
-    id: 'static-bs-8',
-    name: 'Designer Sunglasses',
-    price: 155.00,
-    category: 'Accessories',
-    brand: 'Ray-Ban',
-    image: 'https://images.unsplash.com/photo-1511499767150-a48a237f0083?auto=format&fit=crop&q=80&w=400',
-    rating: 4.7,
-    reviews: 1332,
-    discount: 0,
-    hasOffer: false,
-    isBestSeller: true
-  }
-];
+// Removed staticBestSellers
 
 const Home = () => {
   const [products, setProducts] = useState([]);
+  const [featuredProducts, setFeaturedProducts] = useState([]);
+  const [newArrivals, setNewArrivals] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -169,9 +66,17 @@ const Home = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const productRes = await productService.getProducts();
-        const categoryRes = await productService.getCategories();
+        const [productRes, categoryRes, featuredRes, newArrivalsRes] = await Promise.all([
+          productService.getProducts(),
+          productService.getCategories(),
+          productService.getFeaturedProducts(),
+          productService.getNewArrivals()
+        ]);
+        
         setProducts(productRes.data);
+        setFeaturedProducts(featuredRes.data);
+        setNewArrivals(newArrivalsRes.data);
+        
         const fetchedCategories = categoryRes.data.filter(c => (c.name || c) !== 'All');
         setCategories(fetchedCategories);
         // Triplicate for infinite loop: [set1, set2, set3]
@@ -352,7 +257,7 @@ const Home = () => {
           </div>
           <div className="product-carousel-container">
             <div className="product-carousel-track" ref={featuredRef}>
-              {products.filter(p => p.isFeatured).slice(0, 8).map(product => (
+              {(featuredProducts.length > 0 ? featuredProducts : products.filter(p => p.isFeatured)).slice(0, 8).map(product => (
                 <div key={product.id} className="product-carousel-item">
                   <ProductCard product={product} />
                 </div>
@@ -380,7 +285,7 @@ const Home = () => {
         </div>
         <div className="product-carousel-container">
           <div className="product-carousel-track" ref={newArrivalsRef}>
-            {products.filter(p => p.isNewArrival).slice(0, 8).map(product => (
+            {(newArrivals.length > 0 ? newArrivals : products.filter(p => p.isNewArrival)).slice(0, 8).map(product => (
               <div key={product.id} className="product-carousel-item">
                 <ProductCard product={product} />
               </div>
@@ -408,7 +313,7 @@ const Home = () => {
           </div>
           <div className="product-carousel-container">
             <div className="product-carousel-track" ref={bestSellersRef}>
-              {staticBestSellers.map(product => (
+              {products.filter(p => p.isBestSeller).slice(0, 8).map(product => (
                 <div key={product.id} className="product-carousel-item">
                   <ProductCard product={product} />
                 </div>

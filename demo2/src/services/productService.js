@@ -57,6 +57,73 @@ const fetchAllPages = async (initialUrl) => {
   return allResults;
 };
 
+
+const formatProduct = (p, index = 0, options = {}) => {
+  let brandName = p.brand;
+  if (!brandName || brandName.trim() === '') {
+    const cat = (p.category_name || p.category || '').toLowerCase();
+    if (cat.includes('electronic') || cat.includes('computer')) {
+      brandName = 'Asus';
+    } else if (cat.includes('fashion') || cat.includes('footwear') || cat.includes('sport')) {
+      brandName = 'Puma';
+    } else {
+      brandName = index % 2 === 0 ? 'Asus' : 'Puma';
+    }
+  }
+
+  let variants = p.variants || [];
+  
+  let images = [p.image || 'https://via.placeholder.com/600x600'];
+  if (p.angle2) images.push(p.angle2);
+  if (p.angle3) images.push(p.angle3);
+  if (p.angle4) images.push(p.angle4);
+
+  if (images.length === 1 && p.images && p.images.length > 0) {
+      images = p.images.map(img => img.image || img);
+  }
+
+  while (images.length < 4) {
+      images.push('https://via.placeholder.com/600x600?text=Angle+' + (images.length + 1));
+  }
+
+  if (variants.length === 0) {
+     if (index % 3 === 0) {
+       variants = [
+         { color: 'Red', size: 'S', stock: 10, additional_price: 0 },
+         { color: 'Red', size: 'M', stock: 5, additional_price: 5 },
+         { color: 'Blue', size: 'M', stock: 8, additional_price: 5 },
+         { color: 'Black', size: 'L', stock: 2, additional_price: 10 }
+       ];
+     } else if (index % 2 === 0) {
+       variants = [
+         { color: 'Black', stock: 15 },
+         { color: 'White', stock: 12 }
+       ];
+     }
+  }
+
+  const calculatedRating = p.rating?.rate ?? p.rating ?? 4.0;
+
+  return {
+    id: p.id,
+    name: p.title || p.name,
+    price: Number(p.price) || 0,
+    category: p.category_name || p.category || 'General',
+    brand: brandName,
+    image: API_IMAGE_OVERRIDES[p.id] || images[0],
+    description: p.description || '',
+    rating: calculatedRating,
+    reviews: p.rating?.count ?? 0,
+    isFeatured: p.is_featured || p.isFeatured || options.isFeatured || false,
+    isNewArrival: p.is_new_arrival || p.isNewArrival || options.isNewArrival || false,
+    isBestSeller: p.is_best_seller || p.isBestSeller || options.isBestSeller || (calculatedRating > 4.5),
+    discount: p.discount || (index % 4 === 0 ? 20 : 0),
+    hasOffer: p.has_offer || p.hasOffer || (index % 4 === 0),
+    variants: variants,
+    images: images
+  };
+};
+
 const productService = {
   // ✅ GET ALL PRODUCTS
   getProducts: async () => {
@@ -108,79 +175,11 @@ const productService = {
           .map(p => p.id)
       );
 
-      const products = allResults.map((p, index) => {
-        let brandName = p.brand;
-        if (!brandName || brandName.trim() === '') {
-          const cat = (p.category_name || p.category || '').toLowerCase();
-          if (cat.includes('electronic') || cat.includes('computer')) {
-            brandName = 'Asus';
-          } else if (cat.includes('fashion') || cat.includes('footwear') || cat.includes('sport')) {
-            brandName = 'Puma';
-          } else {
-            brandName = index % 2 === 0 ? 'Asus' : 'Puma';
-          }
-        }
-
-        let variants = p.variants || [];
-        
-        // Extract images from backend (main image + angle2, angle3, angle4)
-        let images = [p.image || 'https://via.placeholder.com/600x600'];
-        if (p.angle2) images.push(p.angle2);
-        if (p.angle3) images.push(p.angle3);
-        if (p.angle4) images.push(p.angle4);
-
-        // Fallback to p.images array if no explicit angles provided
-        if (images.length === 1 && p.images && p.images.length > 0) {
-            images = p.images.map(img => img.image);
-        }
-
-        // Ensure we always have exactly 4 angles for the preview gallery
-        while (images.length < 4) {
-            images.push(`https://via.placeholder.com/600x600?text=Angle+${images.length + 1}`);
-        }
-
-        // Inject robust mock data for Product Preview variants testing if missing
-        if (variants.length === 0) {
-           if (index % 3 === 0) {
-             variants = [
-               { color: 'Red', size: 'S', stock: 10, additional_price: 0 },
-               { color: 'Red', size: 'M', stock: 5, additional_price: 5 },
-               { color: 'Blue', size: 'M', stock: 8, additional_price: 5 },
-               { color: 'Black', size: 'L', stock: 2, additional_price: 10 }
-             ];
-           } else if (index % 2 === 0) {
-             variants = [
-               { color: 'Black', stock: 15 },
-               { color: 'White', stock: 12 }
-             ];
-           }
-        }
-
-        const calculatedRating = p.rating?.rate ?? p.rating ?? 4.0;
-
-        return {
-          id: p.id,
-          name: p.title || p.name,
-          price: Number(p.price) || 0,
-          category: p.category_name || p.category || 'General',
-          brand: brandName,
-          image: API_IMAGE_OVERRIDES[p.id] || (p.images && p.images.length > 0 ? p.images[0].image : p.image),
-
-          description: p.description || '',
-
-          // safe rating handling
-          rating: calculatedRating,
-          reviews: p.rating?.count ?? 0,
-
-          isFeatured: p.is_featured || p.isFeatured || topFeaturedIds.has(p.id),
-          isNewArrival: p.is_new_arrival || p.isNewArrival || topNewArrivalIds.has(p.id),
-          isBestSeller: p.is_best_seller || p.isBestSeller || (hasSalesData ? topBestSellerIds.has(p.id) : calculatedRating > 4.5),
-          discount: p.discount || (index % 4 === 0 ? 20 : 0),
-          hasOffer: p.has_offer || p.hasOffer || (index % 4 === 0),
-          variants: variants,
-          images: images
-        };
-      });
+      const products = allResults.map((p, index) => formatProduct(p, index, {
+          isFeatured: topFeaturedIds.has(p.id),
+          isNewArrival: topNewArrivalIds.has(p.id),
+          isBestSeller: hasSalesData ? topBestSellerIds.has(p.id) : undefined
+        }));
 
       cachedProducts = products;
       return { data: products };
@@ -246,26 +245,123 @@ const productService = {
     }
   },
 
-  // ✅ SEARCH PRODUCTS (FRONTEND FILTER)
+  // ✅ SEARCH PRODUCTS (BACKEND)
   searchProducts: async (query) => {
     try {
-      const res = await productService.getProducts();
-      const all = res.data;
-
       if (!query) return { data: [] };
-
-      const q = query.toLowerCase();
-
-      const filtered = all.filter(
-        (p) =>
-          p.name.toLowerCase().includes(q) ||
-          p.category.toLowerCase().includes(q) ||
-          (p.brand && p.brand.toLowerCase().includes(q))
-      );
-
-      return { data: filtered.slice(0, 8) };
+      const response = await api.get(`/products/search/?q=${encodeURIComponent(query)}`);
+      const results = response.data.results || response.data || [];
+      return { data: results.map((p, i) => formatProduct(p, i)) };
     } catch (error) {
+      console.error('Search API error:', error);
       return { data: [] };
+    }
+  },
+
+  // ✅ PRODUCT RECOMMENDATIONS
+  getRecommendations: async (productId) => {
+    try {
+      const response = await api.get(`/products/recommendations/${productId}/`);
+      const results = response.data.results || response.data || [];
+      return { data: results.map((p, i) => formatProduct(p, i)) };
+    } catch (error) {
+      console.error('Recommendations error:', error);
+      return { data: [] };
+    }
+  },
+
+  // ✅ FEATURED PRODUCTS
+  getFeaturedProducts: async () => {
+    try {
+      const response = await api.get('/products/featured/');
+      const results = response.data.results || response.data || [];
+      return { data: results.map((p, i) => formatProduct(p, i)) };
+    } catch (error) {
+      console.error('Featured products error:', error);
+      return { data: [] };
+    }
+  },
+
+  // ✅ NEW ARRIVALS
+  getNewArrivals: async () => {
+    try {
+      const response = await api.get('/products/new-arrivals/');
+      const results = response.data.results || response.data || [];
+      return { data: results.map((p, i) => formatProduct(p, i)) };
+    } catch (error) {
+      console.error('New arrivals error:', error);
+      return { data: [] };
+    }
+  },
+
+  // ✅ CUSTOMERS ALSO BOUGHT
+  getCustomersAlsoBought: async (productId) => {
+    try {
+      const response = await api.get(`/products/customers-also-bought/${productId}/`);
+      const results = response.data.results || response.data || [];
+      return { data: results.map((p, i) => formatProduct(p, i)) };
+    } catch (error) {
+      console.error('Customers also bought error:', error);
+      return { data: [] };
+    }
+  },
+
+  // ✅ SIMILAR PRICE
+  getSimilarPrice: async (productId) => {
+    try {
+      const response = await api.get(`/products/similar-price/${productId}/`);
+      const results = response.data.results || response.data || [];
+      return { data: results.map((p, i) => formatProduct(p, i)) };
+    } catch (error) {
+      console.error('Similar price error:', error);
+      return { data: [] };
+    }
+  },
+
+  // ✅ PERSONALIZED
+  getPersonalized: async (userId) => {
+    try {
+      const response = await api.get(`/products/personalized/?user_id=${userId}`);
+      const results = response.data.results || response.data || [];
+      return { data: results.map((p, i) => formatProduct(p, i)) };
+    } catch (error) {
+      console.error('Personalized error:', error);
+      return { data: [] };
+    }
+  },
+
+  // ✅ LOW STOCK
+  getLowStock: async () => {
+    try {
+      const response = await api.get('/products/low-stock/');
+      const results = response.data.results || response.data || [];
+      return { data: results.map((p, i) => formatProduct(p, i)) };
+    } catch (error) {
+      console.error('Low stock error:', error);
+      return { data: [] };
+    }
+  },
+
+  // ✅ OUT OF STOCK
+  getOutOfStock: async () => {
+    try {
+      const response = await api.get('/products/out-of-stock/');
+      const results = response.data.results || response.data || [];
+      return { data: results.map((p, i) => formatProduct(p, i)) };
+    } catch (error) {
+      console.error('Out of stock error:', error);
+      return { data: [] };
+    }
+  },
+
+  // ✅ INVENTORY DASHBOARD
+  getInventoryDashboard: async () => {
+    try {
+      const response = await api.get('/products/inventory/dashboard/');
+      return { data: response.data };
+    } catch (error) {
+      console.error('Inventory dashboard error:', error);
+      return { data: null };
     }
   },
 

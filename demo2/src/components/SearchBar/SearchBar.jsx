@@ -20,11 +20,12 @@ const SearchBar = ({ onSearchSubmit, placeholder = "Search products..." }) => {
 
   // Highlight text
   const highlightText = (text, highlight) => {
-    if (!highlight.trim()) {
-      return <span>{text}</span>;
+    const safeText = typeof text === 'string' ? text : String(text || '');
+    if (!highlight.trim() || !safeText) {
+      return <span>{safeText}</span>;
     }
     const regex = new RegExp(`(${highlight})`, 'gi');
-    const parts = text.split(regex);
+    const parts = safeText.split(regex);
     return (
       <span>
         {parts.map((part, i) => 
@@ -161,12 +162,12 @@ const SearchBar = ({ onSearchSubmit, placeholder = "Search products..." }) => {
               <ul>
                 {results.map(product => (
                   <li key={product.id} onClick={() => handleSuggestionClick(product)}>
-                    <img src={product.image} alt={product.name} />
+                    <img src={product.image || (product.images && product.images.length > 0 ? product.images[0].image : 'https://via.placeholder.com/600x600')} alt={product.name || 'Product'} />
                     <div className="suggestion-details">
                       <div className="suggestion-name">{highlightText(product.name, query)}</div>
                       <div className="suggestion-category">{highlightText(product.category, query)}</div>
                     </div>
-                    <div className="suggestion-price">₹{product.price.toFixed(2)}</div>
+                    <div className="suggestion-price">₹{Number(product.price || 0).toFixed(2)}</div>
                   </li>
                 ))}
               </ul>
