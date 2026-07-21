@@ -4,6 +4,7 @@ import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { WishlistProvider } from './context/WishlistContext';
 import { ToastProvider } from './context/ToastContext';
+import { RecentlyViewedProvider } from './context/RecentlyViewedContext';
 import Navbar from './components/Navbar/Navbar';
 import BottomNav from './components/BottomNav/BottomNav';
 import Footer from './components/Footer/Footer';
@@ -34,23 +35,25 @@ function App() {
   return (
     <AuthProvider>
       <ToastProvider>
-        <CartProvider>
-          <WishlistProvider>
-            <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-              <ScrollToTop />
-              <div className="app">
-                <Navbar />
-                <BackButton />
-                <main className="main-content">
-                  <AppRoutes />
-                </main>
-                <LoginModal />
-                <Footer />
-                <BottomNav />
-              </div>
-            </Router>
-          </WishlistProvider>
-        </CartProvider>
+        <RecentlyViewedProvider>
+          <CartProvider>
+            <WishlistProvider>
+              <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+                <ScrollToTop />
+                <div className="app">
+                  <Navbar />
+                  <BackButton />
+                  <main className="main-content">
+                    <AppRoutes />
+                  </main>
+                  <LoginModal />
+                  <Footer />
+                  <BottomNav />
+                </div>
+              </Router>
+            </WishlistProvider>
+          </CartProvider>
+        </RecentlyViewedProvider>
       </ToastProvider>
     </AuthProvider>
   );

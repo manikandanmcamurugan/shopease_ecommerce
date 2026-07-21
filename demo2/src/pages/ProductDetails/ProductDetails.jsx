@@ -6,6 +6,7 @@ import reviewService from '../../services/reviewService';
 import { useCart } from '../../context/CartContext';
 import { useWishlist } from '../../context/WishlistContext';
 import { useAuth } from '../../context/AuthContext';
+import { useRecentlyViewed } from '../../context/RecentlyViewedContext';
 import Loader from '../../components/Loader/Loader';
 import ProductCard from '../../components/ProductCard/ProductCard';
 import './ProductDetails.css';
@@ -20,6 +21,7 @@ const ProductDetails = () => {
   const { addToCart, isInCart } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
   const { user } = useAuth();
+  const { recentlyViewed, addRecentlyViewed } = useRecentlyViewed();
   const [activeImage, setActiveImage] = useState(null);
   const [selectedColor, setSelectedColor] = useState('');
   const [selectedSize, setSelectedSize] = useState('');
@@ -28,6 +30,7 @@ const ProductDetails = () => {
   const navigate = useNavigate();
   const carouselRef = useRef(null);
   const recommendedCarouselRef = useRef(null);
+  const recentlyViewedCarouselRef = useRef(null);
 
   const calculateScrollAmount = (ref) => {
     if (!ref.current || ref.current.children.length === 0) return 600;
@@ -50,6 +53,14 @@ const ProductDetails = () => {
       const amount = calculateScrollAmount(recommendedCarouselRef);
       const scrollAmount = direction === 'left' ? -amount : amount;
       recommendedCarouselRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
+  };
+
+  const scrollRecentlyViewedCarousel = (direction) => {
+    if (recentlyViewedCarouselRef.current) {
+      const amount = calculateScrollAmount(recentlyViewedCarouselRef);
+      const scrollAmount = direction === 'left' ? -amount : amount;
+      recentlyViewedCarouselRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
     }
   };
 
@@ -116,7 +127,10 @@ const ProductDetails = () => {
       try {
         const res = await productService.getProductById(id);
         setProduct(res.data);
-        setActiveImage(res.data.image);
+        setActiveImage(res.data.image || (res.data.images && res.data.images[0]?.image) || 'https://placehold.co/600x600');
+        
+        // Track the view
+        addRecentlyViewed(res.data);
         
         const variants = res.data.variants || [];
         const colors = Array.from(new Set(variants.filter(v => v.color).map(v => v.color)));
@@ -456,6 +470,32 @@ const ProductDetails = () => {
           <div className="product-carousel-container">
             <div className="product-carousel-track" ref={recommendedCarouselRef}>
               {recommendedProducts.map(p => (
+                <div key={p.id} className="product-carousel-item">
+                  <ProductCard product={p} />
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Recently Viewed Products */}
+      {recentlyViewed.filter(p => p.id !== product.id).length > 0 && (
+        <section className="related-section" style={{ paddingTop: '2rem', borderTop: '1px solid #e2e8f0' }}>
+          <div className="section-header-inline" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+            <h2 style={{ marginBottom: 0 }}>Recently Viewed</h2>
+            <div style={{ display: 'flex', gap: '0.5rem' }} className="d-none d-md-flex">
+              <button onClick={() => scrollRecentlyViewedCarousel('left')} className="carousel-nav-btn-small">
+                <ChevronLeft size={18} />
+              </button>
+              <button onClick={() => scrollRecentlyViewedCarousel('right')} className="carousel-nav-btn-small">
+                <ChevronRight size={18} />
+              </button>
+            </div>
+          </div>
+          <div className="product-carousel-container">
+            <div className="product-carousel-track" ref={recentlyViewedCarouselRef}>
+              {recentlyViewed.filter(p => p.id !== product.id).map(p => (
                 <div key={p.id} className="product-carousel-item">
                   <ProductCard product={p} />
                 </div>

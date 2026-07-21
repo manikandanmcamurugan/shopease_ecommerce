@@ -73,7 +73,7 @@ const formatProduct = (p, index = 0, options = {}) => {
 
   let variants = p.variants || [];
   
-  let images = [p.image || 'https://via.placeholder.com/600x600'];
+  let images = [p.image || 'https://placehold.co/600x600'];
   if (p.angle2) images.push(p.angle2);
   if (p.angle3) images.push(p.angle3);
   if (p.angle4) images.push(p.angle4);
@@ -83,7 +83,7 @@ const formatProduct = (p, index = 0, options = {}) => {
   }
 
   while (images.length < 4) {
-      images.push('https://via.placeholder.com/600x600?text=Angle+' + (images.length + 1));
+      images.push('https://placehold.co/600x600?text=Angle+' + (images.length + 1));
   }
 
   if (variants.length === 0) {
@@ -116,7 +116,7 @@ const formatProduct = (p, index = 0, options = {}) => {
     reviews: p.rating?.count ?? 0,
     isFeatured: p.is_featured || p.isFeatured || options.isFeatured || false,
     isNewArrival: p.is_new_arrival || p.isNewArrival || options.isNewArrival || false,
-    isBestSeller: p.is_best_seller || p.isBestSeller || options.isBestSeller || (calculatedRating > 4.5),
+    isBestSeller: p.is_best_seller || p.isBestSeller || options.isBestSeller || (calculatedRating > 4.5) || (index % 5 === 1),
     discount: p.discount || (index % 4 === 0 ? 20 : 0),
     hasOffer: p.has_offer || p.hasOffer || (index % 4 === 0),
     variants: variants,
@@ -214,7 +214,7 @@ const productService = {
           isBestSeller: p.is_best_seller || p.isBestSeller || ((p.rating?.rate ?? p.rating ?? 4) > 4.5),
           variants: p.variants || [],
           images: (function() {
-            let imgs = [p.image || 'https://via.placeholder.com/600x600'];
+            let imgs = [p.image || 'https://placehold.co/600x600'];
             if (p.angle2) imgs.push(p.angle2);
             if (p.angle3) imgs.push(p.angle3);
             if (p.angle4) imgs.push(p.angle4);
@@ -222,7 +222,7 @@ const productService = {
               imgs = p.images.map(img => img.image);
             }
             while (imgs.length < 4) {
-              imgs.push(`https://via.placeholder.com/600x600?text=Angle+${imgs.length + 1}`);
+              imgs.push(`https://placehold.co/600x600?text=Angle+${imgs.length + 1}`);
             }
             return imgs;
           })()
@@ -261,8 +261,10 @@ const productService = {
   // ✅ PRODUCT RECOMMENDATIONS
   getRecommendations: async (productId) => {
     try {
-      const response = await api.get(`/products/recommendations/${productId}/`);
-      const results = response.data.results || response.data || [];
+      // Temporarily mock this since the backend endpoint doesn't exist yet (prevents 404 console errors)
+      // const response = await api.get(`/products/recommendations/${productId}/`);
+      // const results = response.data.results || response.data || [];
+      const results = [];
       return { data: results.map((p, i) => formatProduct(p, i)) };
     } catch (error) {
       console.error('Recommendations error:', error);
@@ -273,8 +275,10 @@ const productService = {
   // ✅ FEATURED PRODUCTS
   getFeaturedProducts: async () => {
     try {
-      const response = await api.get('/products/featured/');
-      const results = response.data.results || response.data || [];
+      // Temporarily mock this since the backend endpoint doesn't exist yet
+      // const response = await api.get('/products/featured/');
+      // const results = response.data.results || response.data || [];
+      const results = [];
       return { data: results.map((p, i) => formatProduct(p, i)) };
     } catch (error) {
       console.error('Featured products error:', error);
@@ -285,8 +289,10 @@ const productService = {
   // ✅ NEW ARRIVALS
   getNewArrivals: async () => {
     try {
-      const response = await api.get('/products/new-arrivals/');
-      const results = response.data.results || response.data || [];
+      // Temporarily mock this since the backend endpoint doesn't exist yet
+      // const response = await api.get('/products/new-arrivals/');
+      // const results = response.data.results || response.data || [];
+      const results = [];
       return { data: results.map((p, i) => formatProduct(p, i)) };
     } catch (error) {
       console.error('New arrivals error:', error);
@@ -297,8 +303,10 @@ const productService = {
   // ✅ CUSTOMERS ALSO BOUGHT
   getCustomersAlsoBought: async (productId) => {
     try {
-      const response = await api.get(`/products/customers-also-bought/${productId}/`);
-      const results = response.data.results || response.data || [];
+      // Temporarily mock this since the backend endpoint doesn't exist yet
+      // const response = await api.get(`/products/customers-also-bought/${productId}/`);
+      // const results = response.data.results || response.data || [];
+      const results = [];
       return { data: results.map((p, i) => formatProduct(p, i)) };
     } catch (error) {
       console.error('Customers also bought error:', error);

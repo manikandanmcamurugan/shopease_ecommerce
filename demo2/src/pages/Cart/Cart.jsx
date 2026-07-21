@@ -19,7 +19,7 @@ const getImage    = (item) => item.image    ?? item.product?.image    ?? '';
 const getCategory = (item) => item.category ?? item.product?.category ?? '';
 
 const Cart = () => {
-  const { cartItems, removeFromCart, updateQuantity, cartTotal, loading, error } = useCart();
+  const { cartItems, removeFromCart, updateQuantity, cartTotal, loading, error, appliedCoupon, discountAmount, applyCoupon, removeCoupon } = useCart();
   const navigate = useNavigate();
 
   const safeTotal = Number(cartTotal ?? 0);
@@ -84,14 +84,51 @@ const Cart = () => {
           <div className="summary-row">
             <span>Shipping</span>
             <span>{safeTotal > 500 ? 'Free' : '₹10.00'}</span>    
-                  </div>
+          </div>
           <div className="summary-row">
             <span>Tax (Estimated)</span>
             <span>₹{(safeTotal * 0.08).toFixed(2)}</span>
           </div>
+          
+          {appliedCoupon ? (
+            <div className="summary-row discount-row" style={{ color: '#10b981', fontWeight: '500' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <span>Discount ({appliedCoupon.code})</span>
+                <button 
+                  onClick={removeCoupon}
+                  style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: 0, display: 'flex' }}
+                  title="Remove Coupon"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
+              <span>-₹{discountAmount.toFixed(2)}</span>
+            </div>
+          ) : (
+            <div className="coupon-input-group" style={{ display: 'flex', gap: '0.5rem', margin: '1rem 0' }}>
+              <input 
+                type="text" 
+                placeholder="Enter coupon code" 
+                className="form-control"
+                id="couponInput"
+                style={{ flex: 1, padding: '0.5rem', border: '1px solid #cbd5e1', borderRadius: '4px' }}
+              />
+              <button 
+                className="btn btn-outline" 
+                style={{ padding: '0.5rem 1rem' }}
+                onClick={() => {
+                  const val = document.getElementById('couponInput').value;
+                  if (val) applyCoupon(val);
+                }}
+              >
+                Apply
+              </button>
+            </div>
+          )}
+
           <div className="summary-total">
             <span>Total</span>
-            <span>₹{(safeTotal + (safeTotal > 100 ? 0 : 10) + safeTotal * 0.08).toFixed(2)}</span>
+            <span>₹{Math.max(0, safeTotal + (safeTotal > 100 ? 0 : 10) + safeTotal * 0.08 - discountAmount).toFixed(2)}</span>
           </div>
           <button className="btn btn-primary checkout-btn" onClick={() => navigate('/checkout')}>
             Proceed to Checkout <ArrowRight size={20} />

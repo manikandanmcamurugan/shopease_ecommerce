@@ -19,7 +19,7 @@ const About = () => {
         </p>
         <p>
           We hope you enjoy our products as much as we enjoy offering them to you. If you have any questions 
-          or comments, please don't hesitate to contact us.
+          or comments, please don't hesitate to reach out to our Help Center.
         </p>
         <div className="about-team">
           <h3>Our Mission</h3>

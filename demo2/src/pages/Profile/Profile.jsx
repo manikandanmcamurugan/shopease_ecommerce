@@ -3,6 +3,7 @@ import { User, MapPin, Package, Settings, LogOut, Camera, Save, Edit2, Lock, Bel
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import authService from '../../services/authService';
+import api from '../../services/api';
 import { orderService } from '../../services/cartService';
 import productService from '../../services/productService';
 import Loader from '../../components/Loader/Loader';
@@ -607,7 +608,30 @@ const Profile = () => {
                     <div className="settings-content">
                       <h3>Notifications</h3>
                       <p>Manage promotional emails and SMS alerts.</p>
-                      <button className="btn btn-outline btn-sm mt-3" onClick={() => addToast('Notification settings coming soon', 'info')}>Manage</button>
+                      <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                        <button className="btn btn-outline btn-sm" onClick={() => addToast('Notification settings coming soon', 'info')}>Manage</button>
+                        <button 
+                          className="btn btn-primary btn-sm" 
+                          onClick={async (e) => {
+                            const btn = e.target;
+                            const originalText = btn.innerText;
+                            btn.innerText = 'Sending...';
+                            btn.disabled = true;
+                            try {
+                              await api.post('/notifications/test/');
+                              addToast('Test email sent successfully!', 'success');
+                            } catch (err) {
+                              console.error(err);
+                              addToast('Failed to send test email.', 'error');
+                            } finally {
+                              btn.innerText = originalText;
+                              btn.disabled = false;
+                            }
+                          }}
+                        >
+                          Send Test Email
+                        </button>
+                      </div>
                     </div>
                   </div>
                   <div className="settings-card">

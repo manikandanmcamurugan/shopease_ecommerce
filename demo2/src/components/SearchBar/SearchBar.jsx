@@ -162,7 +162,7 @@ const SearchBar = ({ onSearchSubmit, placeholder = "Search products..." }) => {
               <ul>
                 {results.map(product => (
                   <li key={product.id} onClick={() => handleSuggestionClick(product)}>
-                    <img src={product.image || (product.images && product.images.length > 0 ? product.images[0].image : 'https://via.placeholder.com/600x600')} alt={product.name || 'Product'} />
+                    <img src={product.image || (product.images && product.images.length > 0 ? product.images[0].image : 'https://placehold.co/600x600')} alt={product.name || 'Product'} />
                     <div className="suggestion-details">
                       <div className="suggestion-name">{highlightText(product.name, query)}</div>
                       <div className="suggestion-category">{highlightText(product.category, query)}</div>

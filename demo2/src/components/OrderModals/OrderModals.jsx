@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { X, CheckCircle, MapPin, Truck, Package, Clock, Star, MessageSquare } from 'lucide-react';
-import { useState } from 'react';
 import reviewService from '../../services/reviewService';
+import returnService from '../../services/returnService';
 import './OrderModals.css';
 
 export const TrackingModal = ({ order, onClose, onCancel }) => {
@@ -112,14 +112,35 @@ export const FeedbackModal = ({ order, onClose }) => {
 
   if (!order) return null;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!feedback.trim()) return;
-    // Simulate API call
-    setSubmitted(true);
-    setTimeout(() => {
-      onClose();
-    }, 2000);
+    
+    const btn = e.nativeEvent.submitter;
+    const originalText = btn ? btn.innerText : 'Submit Request';
+    if (btn) {
+      btn.innerText = 'Submitting...';
+      btn.disabled = true;
+    }
+    
+    try {
+      await returnService.createReturn({
+        order_id: order.id,
+        reason: feedback
+      });
+      setSubmitted(true);
+      setTimeout(() => {
+        onClose();
+      }, 2000);
+    } catch (error) {
+      console.error('Failed to submit return request:', error);
+      alert('Failed to submit your return request. Please try again.');
+    } finally {
+      if (btn) {
+        btn.innerText = originalText;
+        btn.disabled = false;
+      }
+    }
   };
 
   return (

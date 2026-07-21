@@ -3,6 +3,7 @@ import { cartService } from '../services/cartService';
 import { useToast } from './ToastContext';
 import { useAuth } from './AuthContext';
 import { flyToIcon } from '../utils/animations';
+import couponService from '../services/couponService';
 
 const CartContext = createContext();
 
@@ -10,6 +11,8 @@ export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [discountAmount, setDiscountAmount] = useState(0);
   const { addToast } = useToast();
   const { user } = useAuth();
 
@@ -172,6 +175,42 @@ export const CartProvider = ({ children }) => {
     });
   };
 
+  const applyCoupon = async (code) => {
+    try {
+      const res = await couponService.applyCoupon(code);
+      // Assuming response has { data: { discount: <number>, code: 'XYZ', type: 'percentage|fixed' } }
+      // Or maybe { discount: 50, message: "Applied" }
+      const discount = res.data?.discount || res.data?.discount_amount || res.data?.amount || 0;
+      
+      setAppliedCoupon({
+        code: code,
+        discount: discount,
+        ...res.data
+      });
+      setDiscountAmount(discount);
+      addToast('Coupon applied successfully!', 'success');
+      return true;
+    } catch (err) {
+      console.error('Failed to apply coupon:', err);
+      // Try to parse a meaningful error message
+      let errMsg = 'Invalid coupon code';
+      if (err.response?.data) {
+        if (typeof err.response.data === 'string') errMsg = err.response.data;
+        else if (err.response.data.detail) errMsg = err.response.data.detail;
+        else if (err.response.data.error) errMsg = err.response.data.error;
+        else if (err.response.data.message) errMsg = err.response.data.message;
+      }
+      addToast(errMsg, 'error');
+      return false;
+    }
+  };
+
+  const removeCoupon = () => {
+    setAppliedCoupon(null);
+    setDiscountAmount(0);
+    addToast('Coupon removed', 'info');
+  };
+
   return (
     <CartContext.Provider
       value={{
@@ -185,6 +224,10 @@ export const CartProvider = ({ children }) => {
         isInCart,
         loading,
         error,
+        appliedCoupon,
+        discountAmount,
+        applyCoupon,
+        removeCoupon
       }}
     >
       {children}

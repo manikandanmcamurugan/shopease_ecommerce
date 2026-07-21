@@ -9,7 +9,7 @@ import './Checkout.css';
 
 const Checkout = () => {
   const { user } = useAuth();
-  const { cartItems, cartTotal, clearCart } = useCart();
+  const { cartItems, cartTotal, clearCart, appliedCoupon, discountAmount } = useCart();
   const location = useLocation();
 
   // If the user came from "Buy Now", we use the specific item passed in state
@@ -178,7 +178,9 @@ const Checkout = () => {
         user_id: payloadUserId,
         email: user?.email || addressData.email || 'guest@example.com',
         shipping_name: `${selectedAddress.firstName} ${selectedAddress.lastName}`,
-        total_amount: Number((checkoutTotal * 1.1).toFixed(2)),
+        total_amount: Number(Math.max(0, (checkoutTotal * 1.1) - discountAmount).toFixed(2)),
+        discount_amount: discountAmount || 0,
+        coupon_code: appliedCoupon?.code || '',
         status: 'processing',
         payment_method: selectedPayment,
 
@@ -644,7 +646,12 @@ const Checkout = () => {
 
           </div>
 
-          <OrderSummary cartItems={checkoutItems} cartTotal={checkoutTotal} />
+              <OrderSummary 
+                cartItems={checkoutItems} 
+                cartTotal={checkoutTotal} 
+                appliedCoupon={appliedCoupon}
+                discountAmount={discountAmount}
+              />
         </div>
       )}
 
@@ -690,14 +697,15 @@ const Checkout = () => {
   );
 };
 
-const OrderSummary = ({ cartItems, cartTotal, showProceedButton, onProceed, proceedDisabled }) => {
+const OrderSummary = ({ cartItems, cartTotal, showProceedButton, onProceed, proceedDisabled, appliedCoupon, discountAmount }) => {
   const getPrice = (item) => Number(item.price ?? item.unit_price ?? item.product?.price ?? item.product?.unit_price ?? item.product_price ?? 0);
   const getName = (item) => item.name ?? item.product?.name ?? item.product_name ?? 'Product';
   const getImage = (item) => item.image ?? item.product?.image ?? item.product_image ?? '/placeholder.png';
 
   const shipping = cartTotal > 500 ? 0 : 10;
   const tax = cartTotal * 0.08;
-  const finalTotal = cartTotal + shipping + tax;
+  const safeDiscount = discountAmount || 0;
+  const finalTotal = Math.max(0, cartTotal + shipping + tax - safeDiscount);
 
   return (
     <div className="checkout-summary">
@@ -725,6 +733,12 @@ const OrderSummary = ({ cartItems, cartTotal, showProceedButton, onProceed, proc
         <div className="calc-row"><span>Subtotal</span><span>₹{cartTotal.toFixed(2)}</span></div>
         <div className="calc-row"><span>Shipping</span><span>{shipping === 0 ? 'Free' : `₹${shipping.toFixed(2)}`}</span></div>
         <div className="calc-row"><span>Tax</span><span>₹{tax.toFixed(2)}</span></div>
+        {appliedCoupon && (
+          <div className="calc-row" style={{ color: '#10b981', fontWeight: '500' }}>
+            <span>Discount ({appliedCoupon.code})</span>
+            <span>-₹{safeDiscount.toFixed(2)}</span>
+          </div>
+        )}
         <div className="calc-total"><span>Total</span><span>₹{finalTotal.toFixed(2)}</span></div>
       </div>
       <div className="checkout-trust">

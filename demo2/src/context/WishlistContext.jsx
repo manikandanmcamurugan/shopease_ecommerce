@@ -21,6 +21,9 @@ export const WishlistProvider = ({ children }) => {
           const response = await wishlistService.getWishlist();
           let items = response.data.results || response.data || [];
           
+          // If backend returns {id: 1, product: {...}}, extract the product seamlessly
+          items = items.map(item => item.product ? { ...item.product, wishlist_item_id: item.id } : item);
+          
           // Optionally populate from local storage as fallback/cache if backend is empty
           if (items.length === 0) {
             const userKey = user.id || user.email || user.username || 'guest';

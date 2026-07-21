@@ -34,9 +34,9 @@ const Footer = () => {
           </div>
 
           <div className="footer-links">
-            <h3>Customer Service</h3>
+            <h3>Support</h3>
             <ul>
-              <li><Link to="/contact">Contact Us</Link></li>
+              <li><Link to="/contact">Help Center</Link></li>
               <li><Link to="/shipping-policy">Shipping Policy</Link></li>
               <li><Link to="/return-refund">Return & Refund</Link></li>
               <li><Link to="/faq">FAQs</Link></li>
@@ -53,7 +53,7 @@ const Footer = () => {
           </div>
 
           <div className="footer-contact">
-            <h3>Contact Us</h3>
+            <h3>Help Center</h3>
             <div className="contact-item">
               <MapPin size={20} />
               <span>123 Commerce St, Hosur</span>

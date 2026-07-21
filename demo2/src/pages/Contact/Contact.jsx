@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Mail, Phone, MapPin, Send } from 'lucide-react';
+import { Mail, Phone, MapPin, Send, HelpCircle, MessageCircle, FileText } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
 import contactService from '../../services/contactService';
 import './Contact.css';
@@ -29,7 +29,6 @@ const Contact = () => {
       if (error.response?.status === 404) {
         errorMsg = "Contact API endpoint not found on the server (404).";
       } else if (error.response?.data) {
-        // Handle common validation error formats from Django REST Framework
         if (typeof error.response.data === 'object' && !Array.isArray(error.response.data)) {
           const firstErrorKey = Object.keys(error.response.data)[0];
           const firstErrorVal = error.response.data[firstErrorKey];
@@ -47,92 +46,103 @@ const Contact = () => {
   };
 
   return (
-    <div className="contact-page-wrapper">
-      <div className="contact-page container">
-        <div className="contact-header text-center">
-          <h1 className="gradient-text" style={{marginTop:"60px"}}>Get in Touch</h1>
-          <p className="subtitle">We'd love to hear from you. Please fill out this form or shoot us an email.</p>
+    <div className="help-center-wrapper">
+      <div className="help-center-hero">
+        <div className="hero-content">
+          <h1>How can we help you?</h1>
+          <p>Search our knowledge base or get in touch with our support team.</p>
         </div>
+      </div>
 
-        <div className="contact-grid">
-          <div className="contact-info-card">
-            <h3>Contact Information</h3>
-            <p className="info-desc">Reach out to us directly through any of these channels.</p>
-            
-            <div className="info-items-container">
-              <div className="info-item">
-                <div className="icon-wrapper"><Mail className="info-icon" /></div>
-                <div>
-                  <h4>Email</h4>
-                  <p>support@shopease.com</p>
-                </div>
-              </div>
-              <div className="info-item">
-                <div className="icon-wrapper"><Phone className="info-icon" /></div>
-                <div>
-                  <h4>Phone</h4>
-                  <p>+91 9876543210</p>
-                </div>
-              </div>
-              <div className="info-item">
-                <div className="icon-wrapper"><MapPin className="info-icon" /></div>
-                <div>
-                  <h4>Location</h4>
-                  <p>123 Commerce St, Hosur</p>
-                </div>
-              </div>
+      <div className="help-center-container container">
+
+        <div className="contact-section">
+          <div className="contact-form-side">
+            <div className="section-title">
+              <h2>Send us a message</h2>
+              <p>Fill out the form below and our team will get back to you within 24 hours.</p>
             </div>
             
-            <div className="decorative-circle circle-1"></div>
-            <div className="decorative-circle circle-2"></div>
-          </div>
-
-          <div className="contact-form-container">
-            <form className="contact-form" onSubmit={handleSubmit}>
-              <div className={`form-group ${focused === 'name' ? 'focused' : ''}`}>
-                <label htmlFor="name">Full Name</label>
-                <input 
-                  type="text" 
-                  id="name" 
-                  value={formData.name}
-                  onChange={handleChange}
-                  placeholder="John Doe" 
-                  required 
-                  onFocus={() => setFocused('name')}
-                  onBlur={() => setFocused('')}
-                />
-              </div>
-              <div className={`form-group ${focused === 'email' ? 'focused' : ''}`}>
-                <label htmlFor="email">Email Address</label>
-                <input 
-                  type="email" 
-                  id="email" 
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="john@example.com" 
-                  required 
-                  onFocus={() => setFocused('email')}
-                  onBlur={() => setFocused('')}
-                />
+            <form className="modern-form" onSubmit={handleSubmit}>
+              <div className="form-row">
+                <div className={`form-group ${focused === 'name' ? 'focused' : ''}`}>
+                  <label htmlFor="name">Full Name</label>
+                  <input 
+                    type="text" 
+                    id="name" 
+                    value={formData.name}
+                    onChange={handleChange}
+                    placeholder="e.g. John Doe" 
+                    required 
+                    onFocus={() => setFocused('name')}
+                    onBlur={() => setFocused('')}
+                  />
+                </div>
+                <div className={`form-group ${focused === 'email' ? 'focused' : ''}`}>
+                  <label htmlFor="email">Email Address</label>
+                  <input 
+                    type="email" 
+                    id="email" 
+                    value={formData.email}
+                    onChange={handleChange}
+                    placeholder="e.g. john@example.com" 
+                    required 
+                    onFocus={() => setFocused('email')}
+                    onBlur={() => setFocused('')}
+                  />
+                </div>
               </div>
               <div className={`form-group ${focused === 'message' ? 'focused' : ''}`}>
-                <label htmlFor="message">Message</label>
+                <label htmlFor="message">How can we help?</label>
                 <textarea 
                   id="message" 
-                  rows="5" 
+                  rows="6" 
                   value={formData.message}
                   onChange={handleChange}
-                  placeholder="How can we help?" 
+                  placeholder="Please describe your issue or question in detail..." 
                   required 
                   onFocus={() => setFocused('message')}
                   onBlur={() => setFocused('')}
                 ></textarea>
               </div>
-              <button type="submit" className="submit-btn pulse-on-hover" disabled={isSubmitting}>
-                <span>{isSubmitting ? 'Sending...' : 'Send Message'}</span>
-                <Send size={18} />
+              <button type="submit" className="submit-btn" disabled={isSubmitting}>
+                {isSubmitting ? 'Sending...' : 'Send Message'}
+                {!isSubmitting && <Send size={16} style={{marginLeft: '8px'}} />}
               </button>
             </form>
+          </div>
+
+          <div className="contact-info-side">
+            <div className="info-box">
+              <h3>Support Channels</h3>
+              <p className="info-desc">Our dedicated team is ready to assist you through any of these channels.</p>
+              
+              <div className="info-item">
+                <div className="icon-wrap"><Mail size={20} /></div>
+                <div className="info-text">
+                  <h4>Email Support</h4>
+                  <p>support@shopease.com</p>
+                  <span>Avg. response time: 2 hours</span>
+                </div>
+              </div>
+              
+              <div className="info-item">
+                <div className="icon-wrap"><Phone size={20} /></div>
+                <div className="info-text">
+                  <h4>Phone Support</h4>
+                  <p>+91 98765 43210</p>
+                  <span>Mon-Fri, 9am - 6pm</span>
+                </div>
+              </div>
+              
+              <div className="info-item">
+                <div className="icon-wrap"><MapPin size={20} /></div>
+                <div className="info-text">
+                  <h4>Headquarters</h4>
+                  <p>123 Commerce St, Hosur<br/>Tamil Nadu, India</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
